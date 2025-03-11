@@ -195,3 +195,25 @@ small {
     width: 120px;
     font-weight: normal;
 }
+
+
+@media (max-width: 768px) {
+    .tabs {
+        flex-direction: column;
+    }
+    
+    .tab-button {
+        margin-bottom: 3px;
+        border-radius: 3px;
+        width: 100%;
+    }
+    
+    .frequency-row {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .frequency-row span {
+        width: 100%;
+    }
+}
