@@ -3,7 +3,9 @@ const datos = {
     equipamientos: [],
     planes: [],
     preventivos: [],
+    tareasTemp: [],
     currentExportType: null
+    
 };
 
 // Funciones de utilidad
@@ -49,7 +51,9 @@ function openTab(tabName) {
     for (let i = 0; i < tabButtons.length; i++) {
         tabButtons[i].classList.remove('active');
     }
-    
+    if (document.querySelector('.tab-content.active').id === 'planes' && tabName !== 'planes') {
+    datos.tareasTemp = [];
+}
     document.getElementById(tabName).classList.add('active');
     document.querySelector(`.tab-button[onclick="openTab('${tabName}')"]`).classList.add('active');
     
@@ -155,19 +159,103 @@ function actualizarSelectorEquipamientos(selectorId) {
     });
 }
 
+
+function agregarTarea() {
+    const taskKey = document.getElementById('task-key').value.trim();
+    const descripcion = document.getElementById('task-descripcion').value.trim();
+    const duracion = document.getElementById('task-duracion').value.trim();
+    
+    if (!taskKey || !descripcion || !duracion) {
+        alert('Por favor, complete todos los campos de la tarea.');
+        return;
+    }
+    
+    if (!validateDuration(duracion)) {
+        alert(`Formato de duración incorrecto. Debe ser H:MM:SS`);
+        return;
+    }
+    
+    // Verificar si ya existe una tarea con la misma clave
+    if (datos.tareasTemp.some(t => t.taskKey === taskKey)) {
+        alert('Ya existe una tarea con esta clave.');
+        return;
+    }
+    
+    const tarea = {
+        taskKey,
+        descripcion: truncateText(descripcion, 100),
+        duracion
+    };
+    
+    datos.tareasTemp.push(tarea);
+    actualizarTablaTareas();
+    
+    // Limpiar campos de tarea
+    document.getElementById('task-key').value = '';
+    document.getElementById('task-descripcion').value = '';
+    document.getElementById('task-duracion').value = '';
+}
+
+function eliminarTarea(taskKey) {
+    datos.tareasTemp = datos.tareasTemp.filter(t => t.taskKey !== taskKey);
+    actualizarTablaTareas();
+}
+
+function actualizarTablaTareas() {
+    const tbody = document.getElementById('tareas-body');
+    tbody.innerHTML = '';
+    
+    datos.tareasTemp.forEach(tarea => {
+        const tr = document.createElement('tr');
+        
+        const tdKey = document.createElement('td');
+        tdKey.textContent = tarea.taskKey;
+        
+        const tdDesc = document.createElement('td');
+        tdDesc.textContent = tarea.descripcion;
+        
+        const tdDuracion = document.createElement('td');
+        tdDuracion.textContent = tarea.duracion;
+        
+        const tdActions = document.createElement('td');
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-button';
+        deleteBtn.textContent = 'Eliminar';
+        deleteBtn.onclick = () => eliminarTarea(tarea.taskKey);
+        tdActions.appendChild(deleteBtn);
+        
+        tr.appendChild(tdKey);
+        tr.appendChild(tdDesc);
+        tr.appendChild(tdDuracion);
+        tr.appendChild(tdActions);
+        
+        tbody.appendChild(tr);
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
 // Funciones para Planes de Mantenimiento
 function agregarPlanMantenimiento() {
     const equipamientoKey = document.getElementById('equipamiento-plan').value;
     const planKey = document.getElementById('plan-key').value.trim();
     const periodicidad = document.getElementById('periodicidad').value;
-    const tareasTexto = document.getElementById('tareas-texto').value.trim();
     
     if (!equipamientoKey || !planKey || !periodicidad) {
         alert('Por favor, complete los campos requeridos del plan de mantenimiento.');
         return;
     }
     
-    if (!tareasTexto) {
+    if (datos.tareasTemp.length === 0) {
         alert('Por favor, ingrese al menos una tarea.');
         return;
     }
@@ -185,44 +273,6 @@ function agregarPlanMantenimiento() {
         return;
     }
     
-    // Procesar las tareas
-    const tareasArray = parseTabSeparatedValues(tareasTexto);
-    const tareas = [];
-    
-    for (const tareaData of tareasArray) {
-        if (tareaData.length < 3) {
-            alert('Formato de tarea incorrecto. Debe incluir TaskKey, Descripción y Duración.');
-            return;
-        }
-        
-        const [taskKey, descripcion, duracion] = tareaData;
-        
-        if (!taskKey || !descripcion || !duracion) {
-            alert('Todos los campos de la tarea son obligatorios.');
-            return;
-        }
-        
-        if (!validateDuration(duracion)) {
-            alert(`Formato de duración incorrecto para la tarea ${taskKey}. Debe ser H:MM:SS`);
-            return;
-        }
-        
-        tareas.push({
-            taskKey: taskKey.trim(),
-            descripcion: truncateText(descripcion.trim(), 100),
-            duracion: duracion.trim()
-        });
-    }
-    
-
-        // Verificar que no haya TaskKeys duplicados
-        const taskKeys = tareas.map(t => t.taskKey);
-        if (new Set(taskKeys).size !== taskKeys.length) {
-            alert('Hay TaskKeys duplicados. Cada tarea debe tener un identificador único.');
-            return;
-        }
-
-
     const descripcionPlan = `${equipamiento.descripcion} - ${periodicidad}`;
     
     const plan = {
@@ -231,7 +281,7 @@ function agregarPlanMantenimiento() {
         equipamientoPrefijo: equipamiento.prefijo,
         descripcion: truncateText(descripcionPlan, 100),
         periodicidad,
-        tareas
+        tareas: [...datos.tareasTemp] // Copia las tareas temporales
     };
     
     datos.planes.push(plan);
@@ -240,7 +290,8 @@ function agregarPlanMantenimiento() {
     // Limpiar formulario
     document.getElementById('plan-key').value = '';
     document.getElementById('periodicidad').value = '';
-    document.getElementById('tareas-texto').value = '';
+    datos.tareasTemp = []; // Limpiar tareas temporales
+    actualizarTablaTareas(); // Actualizar tabla de tareas
 }
 
 function eliminarPlan(planKey) {
