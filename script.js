@@ -214,6 +214,15 @@ function agregarPlanMantenimiento() {
         });
     }
     
+
+        // Verificar que no haya TaskKeys duplicados
+        const taskKeys = tareas.map(t => t.taskKey);
+        if (new Set(taskKeys).size !== taskKeys.length) {
+            alert('Hay TaskKeys duplicados. Cada tarea debe tener un identificador único.');
+            return;
+        }
+
+
     const descripcionPlan = `${equipamiento.descripcion} - ${periodicidad}`;
     
     const plan = {
