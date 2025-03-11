@@ -22,6 +22,22 @@ function parseTabSeparatedValues(text) {
     return lines.map(line => line.split('\t').map(item => item.trim()));
 }
 
+
+function escapeCSV(text) {
+    if (text === null || text === undefined) return '';
+    const t = String(text);
+    // Si contiene comillas, comas o saltos de línea, escapar las comillas y envolver en comillas
+    if (t.includes('"') || t.includes(',') || t.includes('\n')) {
+        return '"' + t.replace(/"/g, '""') + '"';
+    }
+    return '"' + t + '"';
+}
+
+
+
+
+
+
 // Función para abrir pestañas
 function openTab(tabName) {
     const tabContents = document.getElementsByClassName('tab-content');
@@ -35,7 +51,7 @@ function openTab(tabName) {
     }
     
     document.getElementById(tabName).classList.add('active');
-    event.currentTarget.classList.add('active');
+    document.querySelector(`.tab-button[onclick="openTab('${tabName}')"]`).classList.add('active');
     
     // Actualizar selectores cuando se cambia de pestaña
     if (tabName === 'planes') {
@@ -422,7 +438,7 @@ function agregarPreventivo() {
         idPreventivo = Math.max(idInicial, maxId + 1);
     }
     
-    const preventiveMaintenanceId = `PR00000${idPreventivo}`;
+    const preventiveMaintenanceId = `PR${idPreventivo.toString().padStart(7, '0')}`;
     const descripcionPreventivo = `Prev. ${equipamiento.descripcion} (${equipamiento.prefijo})`;
     
     const plannedWork = frecuencias.map(f => {
@@ -502,14 +518,14 @@ function previsualizarDatos(tipo) {
         case 'equipamientos':
             csv = 'Key,Descripcion\n';
             datos.equipamientos.forEach(e => {
-                csv += `"${e.key}","${e.descripcion}"\n`;
+                csv += `"${escapeCSV(e.key)}","${escapeCSV(e.descripcion)}"\n`;
             });
             break;
             
         case 'planes':
             csv = 'MaintenancePlanKey,Descripcion\n';
             datos.planes.forEach(p => {
-                csv += `"${p.planKey}","${p.descripcion}"\n`;
+                csv += `"${escapeCSV(p.planKey)}","${escapeCSV(p.descripcion)}"\n`;
             });
             break;
             
@@ -517,7 +533,7 @@ function previsualizarDatos(tipo) {
             csv = 'MaintenancePlanKey,TaskKey,Descripcion,Duracion\n';
             datos.planes.forEach(p => {
                 p.tareas.forEach(t => {
-                    csv += `"${p.planKey}","${t.taskKey}","${t.descripcion}","${t.duracion}"\n`;
+                    csv += `"${escapeCSV(p.planKey)}","${escapeCSV(t.taskKey)}","${escapeCSV(t.descripcion)}","${escapeCSV(t.duracion)}"\n`;
                 });
             });
             break;
@@ -525,7 +541,7 @@ function previsualizarDatos(tipo) {
         case 'preventivos':
             csv = 'PreventiveMaintenanceId,Descripcion,Asset\n';
             datos.preventivos.forEach(p => {
-                csv += `"${p.preventiveMaintenanceId}","${p.descripcion}","${p.asset}"\n`;
+                csv += `"${escapeCSV(p.preventiveMaintenanceId)}","${escapeCSV(p.descripcion)}","${escapeCSV(p.asset)}"\n`;
             });
             break;
             
@@ -533,7 +549,7 @@ function previsualizarDatos(tipo) {
             csv = 'PreventiveMaintenanceId,MaintenancePlan,Frequency,OccursEvery\n';
             datos.preventivos.forEach(p => {
                 p.plannedWork.forEach(pw => {
-                    csv += `"${pw.preventiveMaintenanceId}","${pw.maintenancePlan}","${pw.frequency}","${pw.occursEvery}"\n`;
+                    csv += `"${escapeCSV(pw.preventiveMaintenanceId)}","${escapeCSV(pw.maintenancePlan)}","${escapeCSV(pw.frequency)}","${escapeCSV(pw.occursEvery)}"\n`;
                 });
             });
             break;
