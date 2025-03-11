@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Datos GMAO</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Generador de Datos GMAO</h1>
+        
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab('equipamientos')">1. Equipamientos</button>
+            <button class="tab-button" onclick="openTab('planes')">2. Planes de Mantenimiento</button>
+            <button class="tab-button" onclick="openTab('preventivos')">3. Preventivos</button>
+            <button class="tab-button" onclick="openTab('exportar')">4. Exportar</button>
+        </div>
+        
+        <div id="equipamientos" class="tab-content active">
+            <h2>Equipamientos</h2>
+            
+            <div class="form-group">
+                <label for="prefijo-equipo">Prefijo:</label>
+                <input type="text" id="prefijo-equipo" placeholder="Ej: PIG" maxlength="10" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="codigo-equipo">Código:</label>
+                <input type="text" id="codigo-equipo" placeholder="Ej: WM3-DES" maxlength="20" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="descripcion-equipo">Descripción (máx. 100 caracteres):</label>
+                <input type="text" id="descripcion-equipo" placeholder="Ej: Desbobinador IMPRESORA WM3" maxlength="100" required>
+            </div>
+            
+            <button class="action-button" onclick="agregarEquipamiento()">Agregar Equipamiento</button>
+            
+            <div class="table-container">
+                <h3>Equipamientos Agregados</h3>
+                <table id="tabla-equipamientos">
+                    <thead>
+                        <tr>
+                            <th>Key</th>
+                            <th>Descripción</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="equipamientos-body"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="planes" class="tab-content">
+            <h2>Planes de Mantenimiento</h2>
+            
+            <div class="form-group">
+                <label for="equipamiento-plan">Seleccionar Equipamiento:</label>
+                <select id="equipamiento-plan" required>
+                    <option value="">-- Seleccionar equipamiento --</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="plan-key">Plan Key:</label>
+                <input type="text" id="plan-key" placeholder="Ej: PLAN001" maxlength="20" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="periodicidad">Periodicidad:</label>
+                <select id="periodicidad" required>
+                    <option value="">-- Seleccionar periodicidad --</option>
+                    <option value="Diario">Diario</option>
+                    <option value="Semanal">Semanal</option>
+                    <option value="Quincenal">Quincenal</option>
+                    <option value="Mensual">Mensual</option>
+                    <option value="Trimestral">Trimestral</option>
+                    <option value="Semestral">Semestral</option>
+                    <option value="Anual">Anual</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="tareas-texto">Ingresar Tareas (formato: TaskKey \t Descripción \t Duración):</label>
+                <textarea id="tareas-texto" placeholder="T001&#9;Verificar niveles de aceite&#9;0:30:00
+T002&#9;Inspeccionar correas&#9;0:15:00" rows="5"></textarea>
+            </div>
+            
+            <button class="action-button" onclick="agregarPlanMantenimiento()">Agregar Plan</button>
+            
+            <div class="table-container">
+                <h3>Planes Agregados</h3>
+                <table id="tabla-planes">
+                    <thead>
+                        <tr>
+                            <th>Plan Key</th>
+                            <th>Descripción</th>
+                            <th>Tareas</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="planes-body"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="preventivos" class="tab-content">
+            <h2>Preventivos</h2>
+            
+            <div class="form-group">
+                <label for="id-inicial">ID Inicial:</label>
+                <input type="number" id="id-inicial" min="1" value="100" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="equipamiento-preventivo">Seleccionar Equipamiento:</label>
+                <select id="equipamiento-preventivo" required>
+                    <option value="">-- Seleccionar equipamiento --</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="planes-preventivo">Seleccionar Planes:</label>
+                <select id="planes-preventivo" multiple required size="5">
+                    <!-- Opciones se generarán dinámicamente -->
+                </select>
+                <small>Mantenga presionado Ctrl (o Cmd en Mac) para seleccionar múltiples planes</small>
+            </div>
+            
+            <div class="form-group">
+                <label>Configuración de frecuencias:</label>
+                <div id="frecuencias-container"></div>
+            </div>
+            
+            <button class="action-button" onclick="agregarPreventivo()">Agregar Preventivo</button>
+            
+            <div class="table-container">
+                <h3>Preventivos Agregados</h3>
+                <table id="tabla-preventivos">
+                    <thead>
+                        <tr>
+                            <th>Preventive ID</th>
+                            <th>Descripción</th>
+                            <th>Asset</th>
+                            <th>Planes</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="preventivos-body"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="exportar" class="tab-content">
+            <h2>Exportar Datos</h2>
+            
+            <div class="export-options">
+                <button class="action-button" onclick="previsualizarDatos('equipamientos')">Previsualizar Equipamientos</button>
+                <button class="action-button" onclick="previsualizarDatos('planes')">Previsualizar Planes</button>
+                <button class="action-button" onclick="previsualizarDatos('tareas')">Previsualizar Tareas</button>
+                <button class="action-button" onclick="previsualizarDatos('preventivos')">Previsualizar Preventivos</button>
+                <button class="action-button" onclick="previsualizarDatos('planned-work')">Previsualizar Planned Work</button>
+            </div>
+            
+            <div class="preview-container">
+                <h3>Previsualización</h3>
+                <pre id="preview-text"></pre>
+                <button class="action-button" id="copy-button" style="display: none;" onclick="copiarAlPortapapeles()">Copiar al portapapeles</button>
+                <button class="action-button" id="download-button" style="display: none;" onclick="descargarCSV()">Descargar CSV</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
