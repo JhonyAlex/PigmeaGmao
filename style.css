@@ -197,6 +197,66 @@ small {
 }
 
 
+
+.task-form {
+    display: flex;
+    margin-bottom: 15px;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.task-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    flex: 1;
+}
+
+.task-inputs input {
+    flex: 1;
+    min-width: 120px;
+}
+
+.add-task-btn {
+    white-space: nowrap;
+}
+
+.task-table-container {
+    margin-top: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+}
+
+/* Modificar la media query para dispositivos móviles (línea 200) */
+@media (max-width: 768px) {
+    .tabs {
+        flex-direction: column;
+    }
+    
+    .tab-button {
+        margin-bottom: 3px;
+        border-radius: 3px;
+        width: 100%;
+    }
+    
+    .frequency-row, .task-form {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .frequency-row span, .add-task-btn {
+        width: 100%;
+    }
+}
+
+
+
+
+
+
+
+
 @media (max-width: 768px) {
     .tabs {
         flex-direction: column;
