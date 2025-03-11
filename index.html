@@ -81,11 +81,30 @@
                 </select>
             </div>
             
-            <div class="form-group">
-                <label for="tareas-texto">Ingresar Tareas (formato: TaskKey \t Descripción \t Duración):</label>
-                <textarea id="tareas-texto" placeholder="T001&#9;Verificar niveles de aceite&#9;0:30:00
-T002&#9;Inspeccionar correas&#9;0:15:00" rows="5"></textarea>
-            </div>
+           <div class="form-group">
+    <h4>Tareas del Plan</h4>
+    <div class="task-form">
+        <div class="task-inputs">
+            <input type="text" id="task-key" placeholder="TaskKey" maxlength="20">
+            <input type="text" id="task-descripcion" placeholder="Descripción" maxlength="100">
+            <input type="text" id="task-duracion" placeholder="H:MM:SS" pattern="\d+:[0-5]\d:[0-5]\d">
+        </div>
+        <button type="button" class="action-button add-task-btn" onclick="agregarTarea()">Añadir Tarea</button>
+    </div>
+    <div class="task-table-container">
+        <table id="tabla-tareas">
+            <thead>
+                <tr>
+                    <th>TaskKey</th>
+                    <th>Descripción</th>
+                    <th>Duración</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tareas-body"></tbody>
+        </table>
+    </div>
+</div>
             
             <button class="action-button" onclick="agregarPlanMantenimiento()">Agregar Plan</button>
             
