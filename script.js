@@ -35,11 +35,6 @@ function escapeCSV(text) {
     return '"' + t + '"';
 }
 
-
-
-
-
-
 // Función para abrir pestañas
 function openTab(tabName) {
     const tabContents = document.getElementsByClassName('tab-content');
@@ -51,9 +46,9 @@ function openTab(tabName) {
     for (let i = 0; i < tabButtons.length; i++) {
         tabButtons[i].classList.remove('active');
     }
-    if (document.querySelector('.tab-content.active').id === 'planes' && tabName !== 'planes') {
-    datos.tareasTemp = [];
-}
+    if (document.querySelector(".tab-content.active") && document.querySelector('.tab-content.active').id === 'planes' && tabName !== 'planes') {
+        datos.tareasTemp = [];
+    }
     document.getElementById(tabName).classList.add('active');
     document.querySelector(`.tab-button[onclick="openTab('${tabName}')"]`).classList.add('active');
     
