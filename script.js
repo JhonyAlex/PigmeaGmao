@@ -8,6 +8,39 @@ const datos = {
     
 };
 
+
+
+// Funciones para localStorage - AÑADIR DESPUÉS DE LA DEFINICIÓN DE DATOS
+function guardarDatos() {
+    localStorage.setItem('pigmeaGmaoData', JSON.stringify(datos));
+}
+
+function cargarDatos() {
+    const datosGuardados = localStorage.getItem('pigmeaGmaoData');
+    if (datosGuardados) {
+        const datosParseados = JSON.parse(datosGuardados);
+        // Actualizar el objeto datos con los valores guardados
+        datos.equipamientos = datosParseados.equipamientos || [];
+        datos.planes = datosParseados.planes || [];
+        datos.preventivos = datosParseados.preventivos || [];
+        datos.currentExportType = datosParseados.currentExportType;
+        
+        // Actualizar tablas
+        actualizarTablaEquipamientos();
+        actualizarTablaPlanes();
+        actualizarTablaPreventivos();
+    }
+}
+
+// Iniciar carga de datos cuando la página esté lista
+document.addEventListener('DOMContentLoaded', cargarDatos);
+
+
+
+
+
+
+
 // Funciones de utilidad
 function truncateText(text, maxLength) {
     if (!text) return '';
@@ -178,6 +211,7 @@ function actualizarEquipamiento() {
         actualizarSelectorEquipamientos('equipamiento-preventivo');
         cancelarEdicionEquipamiento();
     }
+    guardarDatos();
 }
 
 function cancelarEdicionEquipamiento() {
@@ -237,6 +271,8 @@ function agregarEquipamiento() {
     document.getElementById('prefijo-equipo').value = '';
     document.getElementById('codigo-equipo').value = '';
     document.getElementById('descripcion-equipo').value = '';
+
+    guardarDatos();
 }
 
 function eliminarEquipamiento(key) {
@@ -255,6 +291,7 @@ function eliminarEquipamiento(key) {
     // Actualizar selectores
     actualizarSelectorEquipamientos('equipamiento-plan');
     actualizarSelectorEquipamientos('equipamiento-preventivo');
+    guardarDatos();
 }
 
 function actualizarTablaEquipamientos() {
@@ -448,6 +485,7 @@ function agregarPlanMantenimiento() {
     document.getElementById('periodicidad').value = '';
     datos.tareasTemp = []; // Limpiar tareas temporales
     actualizarTablaTareas(); // Actualizar tabla de tareas
+    guardarDatos();
 }
 
 function eliminarPlan(planKey) {
@@ -464,6 +502,7 @@ function eliminarPlan(planKey) {
     datos.planes = datos.planes.filter(p => p.planKey !== planKey);
     actualizarTablaPlanes();
     actualizarSelectorPlanes();
+    guardarDatos();
 }
 
 function actualizarTablaPlanes() {
@@ -689,11 +728,13 @@ function agregarPreventivo() {
     
     // Actualizar el valor de ID inicial para el próximo preventivo
     document.getElementById('id-inicial').value = idPreventivo + 1;
+    guardarDatos();
 }
 
 function eliminarPreventivo(id) {
     datos.preventivos = datos.preventivos.filter(p => p.id !== id);
     actualizarTablaPreventivos();
+    guardarDatos();
 }
 
 function actualizarTablaPreventivos() {
@@ -930,6 +971,7 @@ function actualizarPlan() {
         actualizarSelectorPlanes();
         cancelarEdicionPlan();
     }
+    guardarDatos();
 }
 
 function cancelarEdicionPlan() {
@@ -1083,6 +1125,7 @@ function actualizarPreventivo() {
         actualizarTablaPreventivos();
         cancelarEdicionPreventivo();
     }
+    guardarDatos();
 }
 
 function cancelarEdicionPreventivo() {
@@ -1148,6 +1191,7 @@ function procesarCargaMasivaEquipamientos() {
     if (!texto) {
         alert('Por favor, ingrese datos para la carga masiva.');
         return;
+        guardarDatos();
     }
     
     const lineas = texto.split('\n');
@@ -1356,6 +1400,7 @@ function procesarCargaMasivaTareas() {
     } else {
         alert(`No se pudo agregar ninguna tarea.\nErrores encontrados:\n${errores.join('\n')}`);
     }
+    guardarDatos();
 }
 
 
