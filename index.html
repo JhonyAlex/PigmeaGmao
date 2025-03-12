@@ -34,6 +34,13 @@
                 <label for="descripcion-equipo">Descripción (máx. 100 caracteres):</label>
                 <input type="text" id="descripcion-equipo" placeholder="Ej: Desbobinador IMPRESORA WM3" maxlength="100" required>
             </div>
+
+            <div class="form-group">
+                <label for="carga-masiva-equipamientos">Carga Masiva de Equipamientos:</label>
+                <textarea id="carga-masiva-equipamientos" rows="5" placeholder="Pegue aquí sus datos en formato: 'Prefijo-Código Descripción'&#10;Ejemplo: PIG-WM3-DES Desbobinador IMPRESORA WM3 PM00000510"></textarea>
+                <small>Cada línea será procesada como un equipamiento separado.</small>
+                <button type="button" class="action-button" onclick="procesarCargaMasivaEquipamientos()">Procesar Carga Masiva</button>
+            </div>
             
             <button class="action-button" onclick="agregarEquipamiento()">Agregar Equipamiento</button>
             
@@ -90,6 +97,14 @@
             <input type="text" id="task-duracion" placeholder="H:MM:SS" pattern="\d+:[0-5]\d:[0-5]\d">
         </div>
         <button type="button" class="action-button add-task-btn" onclick="agregarTarea()">Añadir Tarea</button>
+    
+        <div class="form-group">
+            <label for="carga-masiva-tareas">Carga Masiva de Tareas:</label>
+            <textarea id="carga-masiva-tareas" rows="5" placeholder="Pegue aquí sus datos en formato: 'TaskKey Descripción Duración'&#10;Ejemplo: WM3-BAN-01 Comprobación de la tensión de la cadena de introducción de banda 0:10:00"></textarea>
+            <small>Cada línea será procesada como una tarea separada.</small>
+            <button type="button" class="action-button" onclick="procesarCargaMasivaTareas()">Procesar Carga Masiva</button>
+        </div>
+    
     </div>
     <div class="task-table-container">
         <table id="tabla-tareas">
