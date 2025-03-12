@@ -378,11 +378,13 @@ function agregarTarea() {
     document.getElementById('task-key').value = '';
     document.getElementById('task-descripcion').value = '';
     document.getElementById('task-duracion').value = '';
+    guardarDatos();
 }
 
 function eliminarTarea(taskKey) {
     datos.tareasTemp = datos.tareasTemp.filter(t => t.taskKey !== taskKey);
     actualizarTablaTareas();
+    guardarDatos();
 }
 
 function actualizarTablaTareas() {
@@ -1191,7 +1193,7 @@ function procesarCargaMasivaEquipamientos() {
     if (!texto) {
         alert('Por favor, ingrese datos para la carga masiva.');
         return;
-        guardarDatos();
+        
     }
     
     const lineas = texto.split('\n');
@@ -1265,8 +1267,8 @@ function procesarCargaMasivaEquipamientos() {
     } else {
         alert(`No se pudo agregar ningún equipamiento.\nErrores encontrados:\n${errores.join('\n')}`);
     }
+    guardarDatos();
 }
-
 
 
 
@@ -1447,6 +1449,7 @@ function actualizarTarea() {
         actualizarTablaTareas();
         cancelarEdicionTarea();
     }
+    guardarDatos();
 }
 
 function cancelarEdicionTarea() {
@@ -1467,4 +1470,23 @@ function cancelarEdicionTarea() {
     // Eliminar botón cancelar
     const btnCancelar = document.getElementById('cancelar-edicion-tarea');
     if (btnCancelar) btnCancelar.remove();
+}
+
+
+function borrarDatosAlmacenados() {
+    if (confirm('¿Está seguro de que desea borrar todos los datos almacenados? Esta acción no se puede deshacer.')) {
+        localStorage.removeItem('pigmeaGmaoData');
+        datos.equipamientos = [];
+        datos.planes = [];
+        datos.preventivos = [];
+        datos.tareasTemp = [];
+        datos.currentExportType = null;
+        
+        actualizarTablaEquipamientos();
+        actualizarTablaPlanes();
+        actualizarTablaPreventivos();
+        actualizarTablaTareas();
+        
+        alert('Todos los datos han sido borrados.');
+    }
 }
