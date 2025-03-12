@@ -1690,5 +1690,8 @@ function actualizarContextoActual() {
     }
 }
 
+
+
+
 // Añadir el evento al selector de equipamiento
 document.getElementById('equipamiento-plan').addEventListener('change', actualizarContextoActual);
