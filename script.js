@@ -802,51 +802,82 @@ function previsualizarDatos(tipo) {
     const previewText = document.getElementById('preview-text');
     datos.currentExportType = tipo;
     let csv = '';
-    
+    let hasData = false;
+
     switch (tipo) {
         case 'equipamientos':
-            csv = 'Key,Descripcion\n';
-            datos.equipamientos.forEach(e => {
-                csv += `${escapeCSV(e.key)},${escapeCSV(e.descripcion)}\n`;
-            });
+            if (datos.equipamientos.length > 0) {
+                hasData = true;
+                csv = 'Key,Descripcion\n';
+                datos.equipamientos.forEach(e => {
+                    csv += `${escapeCSV(e.key)},${escapeCSV(e.descripcion)}\n`;
+                });
+            }
             break;
             
         case 'planes':
-            csv = 'MaintenancePlanKey,Descripcion\n';
-            datos.planes.forEach(p => {
-                csv += `${escapeCSV(p.planKey)},${escapeCSV(p.descripcion)}\n`;
-            });
+            if (datos.planes.length > 0) {
+                hasData = true;
+                csv = 'MaintenancePlanKey,Descripcion\n';
+                datos.planes.forEach(p => {
+                    csv += `${escapeCSV(p.planKey)},${escapeCSV(p.descripcion)}\n`;
+                });
+            }
             break;
             
         case 'tareas':
-            csv = 'MaintenancePlanKey,TaskKey,Descripcion,Duracion\n';
-            datos.planes.forEach(p => {
-                p.tareas.forEach(t => {
-                    csv += `${escapeCSV(p.planKey)},${escapeCSV(t.taskKey)},${escapeCSV(t.descripcion)},${escapeCSV(t.duracion)}\n`;
+            hasData = datos.planes.some(p => p.tareas && p.tareas.length > 0);
+            if (hasData) {
+                csv = 'MaintenancePlanKey,TaskKey,Descripcion,Duracion\n';
+                datos.planes.forEach(p => {
+                    if (p.tareas) {
+                        p.tareas.forEach(t => {
+                            csv += `${escapeCSV(p.planKey)},${escapeCSV(t.taskKey)},${escapeCSV(t.descripcion)},${escapeCSV(t.duracion)}\n`;
+                        });
+                    }
                 });
-            });
+            }
             break;
             
         case 'preventivos':
-            csv = 'PreventiveMaintenanceId,Descripcion,Asset\n';
-            datos.preventivos.forEach(p => {
-                csv += `${escapeCSV(p.preventiveMaintenanceId)},${escapeCSV(p.descripcion)},${escapeCSV(p.asset)}\n`;
-            });
+            if (datos.preventivos.length > 0) {
+                hasData = true;
+                csv = 'PreventiveMaintenanceId,Descripcion,Asset\n';
+                datos.preventivos.forEach(p => {
+                    csv += `${escapeCSV(p.preventiveMaintenanceId)},${escapeCSV(p.descripcion)},${escapeCSV(p.asset)}\n`;
+                });
+            }
             break;
             
         case 'planned-work':
-            csv = 'PreventiveMaintenanceId,MaintenancePlan,Frequency,OccursEvery\n';
-            datos.preventivos.forEach(p => {
-                p.plannedWork.forEach(pw => {
-                    csv += `${escapeCSV(pw.preventiveMaintenanceId)},${escapeCSV(pw.maintenancePlan)},${escapeCSV(pw.frequency)},${escapeCSV(pw.occursEvery)}\n`;
+            hasData = datos.preventivos.some(p => p.plannedWork && p.plannedWork.length > 0);
+            if (hasData) {
+                csv = 'PreventiveMaintenanceId,MaintenancePlan,Frequency,OccursEvery\n';
+                datos.preventivos.forEach(p => {
+                    if (p.plannedWork) {
+                        p.plannedWork.forEach(pw => {
+                            csv += `${escapeCSV(pw.preventiveMaintenanceId)},${escapeCSV(pw.maintenancePlan)},${escapeCSV(pw.frequency)},${escapeCSV(pw.occursEvery)}\n`;
+                        });
+                    }
                 });
-            });
+            }
             break;
     }
+
+    if (!hasData) {
+        previewText.textContent = 'No hay datos disponibles para mostrar.';
+    } else {
+        previewText.textContent = csv;
+    }
+
+    // Mostrar/ocultar botones según si hay datos
+    document.getElementById('copy-button').style.display = hasData ? 'inline-block' : 'none';
+    document.getElementById('download-button').style.display = hasData ? 'inline-block' : 'none';
     
-    previewText.textContent = csv;
-    document.getElementById('copy-button').style.display = 'inline-block';
-    document.getElementById('download-button').style.display = 'inline-block';
+    const toggleButton = document.getElementById('toggle-view-button');
+    if (toggleButton) {
+        toggleButton.style.display = hasData ? 'inline-block' : 'none';
+    }
 }
 
 function copiarAlPortapapeles() {
@@ -1979,14 +2010,16 @@ function previsualizarDatosExcel(tipo) {
     const table = document.createElement('table');
     table.className = 'excel-preview-table';
     
+    let headerRow = document.createElement('tr');
+    let hasData = false;
+
     switch (tipo) {
         case 'equipamientos':
-            // Agregar encabezado
-            let headerRow = document.createElement('tr');
+            if (datos.equipamientos.length === 0) break;
+            hasData = true;
             headerRow.innerHTML = '<th>Key</th><th>Descripcion</th>';
             table.appendChild(headerRow);
             
-            // Agregar filas de datos
             datos.equipamientos.forEach(e => {
                 let row = document.createElement('tr');
                 row.innerHTML = `<td>${e.key}</td><td>${e.descripcion}</td>`;
@@ -1995,7 +2028,8 @@ function previsualizarDatosExcel(tipo) {
             break;
             
         case 'planes':
-            headerRow = document.createElement('tr');
+            if (datos.planes.length === 0) break;
+            hasData = true;
             headerRow.innerHTML = '<th>MaintenancePlanKey</th><th>Descripcion</th>';
             table.appendChild(headerRow);
             
@@ -2007,21 +2041,29 @@ function previsualizarDatosExcel(tipo) {
             break;
             
         case 'tareas':
-            headerRow = document.createElement('tr');
+            hasData = false;
+            datos.planes.forEach(p => {
+                if (p.tareas && p.tareas.length > 0) hasData = true;
+            });
+            if (!hasData) break;
+
             headerRow.innerHTML = '<th>MaintenancePlanKey</th><th>TaskKey</th><th>Descripcion</th><th>Duracion</th>';
             table.appendChild(headerRow);
             
             datos.planes.forEach(p => {
-                p.tareas.forEach(t => {
-                    let row = document.createElement('tr');
-                    row.innerHTML = `<td>${p.planKey}</td><td>${t.taskKey}</td><td>${t.descripcion}</td><td>${t.duracion}</td>`;
-                    table.appendChild(row);
-                });
+                if (p.tareas) {
+                    p.tareas.forEach(t => {
+                        let row = document.createElement('tr');
+                        row.innerHTML = `<td>${p.planKey}</td><td>${t.taskKey}</td><td>${t.descripcion}</td><td>${t.duracion}</td>`;
+                        table.appendChild(row);
+                    });
+                }
             });
             break;
             
         case 'preventivos':
-            headerRow = document.createElement('tr');
+            if (datos.preventivos.length === 0) break;
+            hasData = true;
             headerRow.innerHTML = '<th>PreventiveMaintenanceId</th><th>Descripcion</th><th>Asset</th>';
             table.appendChild(headerRow);
             
@@ -2033,41 +2075,57 @@ function previsualizarDatosExcel(tipo) {
             break;
             
         case 'planned-work':
-            headerRow = document.createElement('tr');
+            hasData = false;
+            datos.preventivos.forEach(p => {
+                if (p.plannedWork && p.plannedWork.length > 0) hasData = true;
+            });
+            if (!hasData) break;
+
             headerRow.innerHTML = '<th>PreventiveMaintenanceId</th><th>MaintenancePlan</th><th>Frequency</th><th>OccursEvery</th>';
             table.appendChild(headerRow);
             
             datos.preventivos.forEach(p => {
-                p.plannedWork.forEach(pw => {
-                    let row = document.createElement('tr');
-                    row.innerHTML = `<td>${pw.preventiveMaintenanceId}</td><td>${pw.maintenancePlan}</td><td>${pw.frequency}</td><td>${pw.occursEvery}</td>`;
-                    table.appendChild(row);
-                });
+                if (p.plannedWork) {
+                    p.plannedWork.forEach(pw => {
+                        let row = document.createElement('tr');
+                        row.innerHTML = `<td>${pw.preventiveMaintenanceId}</td><td>${pw.maintenancePlan}</td><td>${pw.frequency}</td><td>${pw.occursEvery}</td>`;
+                        table.appendChild(row);
+                    });
+                }
             });
             break;
     }
-    
-    previewContainer.appendChild(table);
-    document.getElementById('copy-button').style.display = 'inline-block';
-    document.getElementById('download-button').style.display = 'inline-block';
-    
-    // Añadir también un botón para alternar entre vista tabla y texto plano
-    if (!document.getElementById('toggle-view-button')) {
-        const toggleButton = document.createElement('button');
+
+    if (!hasData) {
+        const noDataMsg = document.createElement('p');
+        noDataMsg.textContent = 'No hay datos disponibles para mostrar.';
+        previewContainer.appendChild(noDataMsg);
+    } else {
+        previewContainer.appendChild(table);
+    }
+
+    // Mostrar botones solo si hay datos
+    document.getElementById('copy-button').style.display = hasData ? 'inline-block' : 'none';
+    document.getElementById('download-button').style.display = hasData ? 'inline-block' : 'none';
+
+    // Actualizar o crear el botón de alternar vista
+    let toggleButton = document.getElementById('toggle-view-button');
+    if (!toggleButton) {
+        toggleButton = document.createElement('button');
         toggleButton.id = 'toggle-view-button';
         toggleButton.className = 'action-button';
-        toggleButton.textContent = 'Cambiar a Vista Texto';
-        toggleButton.onclick = function() {
-            togglePreviewView(tipo);
-        };
         document.getElementById('copy-button').parentNode.insertBefore(
-            toggleButton, 
+            toggleButton,
             document.getElementById('copy-button').nextSibling
         );
-    } else {
-        document.getElementById('toggle-view-button').textContent = 'Cambiar a Vista Texto';
     }
+    toggleButton.textContent = 'Cambiar a Vista Texto';
+    toggleButton.style.display = hasData ? 'inline-block' : 'none';
+    toggleButton.onclick = () => togglePreviewView(tipo);
 }
+
+
+
 
 function togglePreviewView(tipo) {
     const previewContainer = document.getElementById('preview-text');
