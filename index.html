@@ -98,13 +98,15 @@
         </div>
         <button type="button" class="action-button add-task-btn" onclick="agregarTarea()">Añadir Tarea</button>
     
-        <div class="form-group">
-            <label for="carga-masiva-tareas">Carga Masiva de Tareas:</label>
-            <textarea id="carga-masiva-tareas" rows="5" placeholder="Pegue aquí sus datos en formato: 'TaskKey Descripción Duración'&#10;Ejemplo: WM3-BAN-01 Comprobación de la tensión de la cadena de introducción de banda 0:10:00"></textarea>
-            <small>Cada línea será procesada como una tarea separada.</small>
-            <button type="button" class="action-button" onclick="procesarCargaMasivaTareas()">Procesar Carga Masiva</button>
-        </div>
+        
     
+    </div>
+
+    <div class="form-group">
+        <label for="carga-masiva-tareas">Carga Masiva de Tareas:</label>
+        <textarea id="carga-masiva-tareas" rows="5" placeholder="Pegue aquí sus datos en formato: 'TaskKey Descripción Duración'&#10;Ejemplo: WM3-BAN-01 Comprobación de la tensión de la cadena de introducción de banda 0:10:00"></textarea>
+        <small>Cada línea será procesada como una tarea separada.</small>
+        <button type="button" class="action-button" onclick="procesarCargaMasivaTareas()">Procesar Carga Masiva</button>
     </div>
     <div class="task-table-container">
         <table id="tabla-tareas">
