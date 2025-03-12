@@ -282,7 +282,21 @@ td .edit-button, td .delete-button {
     }
 }
 
+.success-button {
+    background-color: #27ae60;
+}
 
+.success-button:hover {
+    background-color: #219653;
+}
+
+.primary-button {
+    background-color: #9b59b6;
+}
+
+.primary-button:hover {
+    background-color: #8e44ad;
+}
 
 
 

@@ -200,6 +200,9 @@
                 <button class="action-button" onclick="previsualizarDatos('tareas')">Previsualizar Tareas</button>
                 <button class="action-button" onclick="previsualizarDatos('preventivos')">Previsualizar Preventivos</button>
                 <button class="action-button" onclick="previsualizarDatos('planned-work')">Previsualizar Planned Work</button>
+                <button class="action-button success-button" onclick="exportarTodosDatos()">Exportar Todos los Datos</button>
+                <button class="action-button primary-button" onclick="document.getElementById('importar-archivo').click()">Importar Datos</button>
+                <input type="file" id="importar-archivo" style="display: none;" accept=".json" onchange="importarDatos(this.files)">
                 <button class="action-button warning-button" onclick="borrarDatosAlmacenados()">Borrar datos almacenados</button>
             </div>
             

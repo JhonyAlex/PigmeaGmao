@@ -866,6 +866,132 @@ function descargarCSV() {
 }
 
 
+// Función para exportar todos los datos a un archivo JSON
+function exportarTodosDatos() {
+    // Crear una copia limpia de los datos
+    const datosExport = {
+        version: "1.0",
+        fecha: new Date().toISOString(),
+        contenido: {
+            equipamientos: datos.equipamientos,
+            planes: datos.planes,
+            preventivos: datos.preventivos
+        }
+    };
+    
+    // Convertir a JSON formateado
+    const jsonData = JSON.stringify(datosExport, null, 2);
+    
+    // Crear un objeto Blob con los datos
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    
+    // Generar un nombre de archivo basado en la fecha
+    const fechaHora = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+    const nombreArchivo = `pigmeaGMAO_backup_${fechaHora}.json`;
+    
+    // Crear un enlace para descargar el archivo
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', nombreArchivo);
+    link.style.visibility = 'hidden';
+    
+    // Agregar a la página, hacer clic y eliminar
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    alert('Archivo de datos exportado correctamente.');
+}
+
+// Función para importar datos desde un archivo JSON
+function importarDatos(files) {
+    if (!files || !files[0]) return;
+    
+    const file = files[0];
+    const reader = new FileReader();
+    
+    reader.onload = function(event) {
+        try {
+            const datosImportados = JSON.parse(event.target.result);
+            
+
+            if (!validarDatosImportados(datosImportados)) {
+                throw new Error('Datos inválidos en el archivo.');
+            }
+            // Validar la estructura básica del archivo
+            if (!datosImportados.contenido || 
+                !datosImportados.contenido.equipamientos || 
+                !datosImportados.contenido.planes || 
+                !datosImportados.contenido.preventivos) {
+                throw new Error('El archivo no tiene el formato esperado.');
+            }
+            
+            // Mostrar confirmación al usuario
+            if (confirm('¿Está seguro de que desea importar estos datos? Se reemplazarán los datos actuales.')) {
+                // Reemplazar los datos actuales
+                datos.equipamientos = datosImportados.contenido.equipamientos;
+                datos.planes = datosImportados.contenido.planes;
+                datos.preventivos = datosImportados.contenido.preventivos;
+                
+                // Guardar en localStorage
+                guardarDatos();
+                
+                // Actualizar todas las tablas
+                actualizarTablaEquipamientos();
+                actualizarTablaPlanes();
+                actualizarTablaPreventivos();
+                actualizarSelectorEquipamientos('equipamiento-plan');
+                actualizarSelectorEquipamientos('equipamiento-preventivo');
+                
+                alert('Datos importados correctamente.');
+            }
+            
+        } catch (error) {
+            alert('Error al importar el archivo: ' + error.message);
+            console.error('Error al importar:', error);
+        }
+        
+        // Limpiar el input de archivo para permitir seleccionar el mismo archivo nuevamente
+        document.getElementById('importar-archivo').value = '';
+    };
+    
+    reader.readAsText(file);
+}
+
+function validarDatosImportados(datosImportados) {
+    // Verificar versión si es necesario
+    if (datosImportados.version && parseFloat(datosImportados.version) > 1.0) {
+        console.warn('El archivo fue creado con una versión más reciente de la aplicación.');
+    }
+    
+    // Validar equipamientos
+    if (!Array.isArray(datosImportados.contenido.equipamientos)) {
+        throw new Error('El formato de equipamientos es inválido.');
+    }
+    
+    // Validar planes
+    if (!Array.isArray(datosImportados.contenido.planes)) {
+        throw new Error('El formato de planes es inválido.');
+    }
+    
+    // Validar preventivos
+    if (!Array.isArray(datosImportados.contenido.preventivos)) {
+        throw new Error('El formato de preventivos es inválido.');
+    }
+    
+    // Validar estructura de cada elemento (opcional)
+    datosImportados.contenido.equipamientos.forEach((equip, index) => {
+        if (!equip.key || !equip.prefijo || !equip.codigo || !equip.descripcion) {
+            throw new Error(`Equipamiento #${index+1} tiene un formato inválido.`);
+        }
+    });
+    
+    // Similar para planes y preventivos si deseas ese nivel de validación
+    
+    return true;
+}
+
 
 
 
