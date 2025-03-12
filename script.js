@@ -966,6 +966,4 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('.tab-button').classList.add('active');
     document.querySelector('.tab-content').classList.add('active');
 });
-
-
-
+}
