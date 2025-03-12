@@ -390,6 +390,19 @@ function eliminarTarea(taskKey) {
 function actualizarTablaTareas() {
     const tbody = document.getElementById('tareas-body');
     tbody.innerHTML = '';
+
+        // Actualizar el encabezado de la sección de tareas
+        const taskTableTitle = document.querySelector('.task-table-container').previousElementSibling;
+        const equipamientoKey = document.getElementById('equipamiento-plan').value;
+        
+        if (equipamientoKey) {
+            const equipamiento = datos.equipamientos.find(e => e.key === equipamientoKey);
+            if (equipamiento) {
+                taskTableTitle.textContent = `Tareas para ${equipamiento.key} - ${modoEdicionPlan ? 'Plan: ' + modoEdicionPlan : 'Nuevo Plan'}`;
+            }
+        } else {
+            taskTableTitle.textContent = "Tareas cargadas";
+        }
     
     datos.tareasTemp.forEach(tarea => {
         const tr = document.createElement('tr');
@@ -1008,7 +1021,13 @@ function editarPlan(planKey) {
     document.getElementById('equipamiento-plan').value = plan.equipamientoKey;
     document.getElementById('plan-key').value = plan.planKey;
     document.getElementById('periodicidad').value = plan.periodicidad;
-    
+        // Actualizar contexto
+        actualizarContextoActual();
+
+         // Bloquear cambio de equipamiento durante edición
+    document.getElementById('equipamiento-plan').disabled = true;
+
+
     // Cargar las tareas del plan en tareasTemp
     datos.tareasTemp = JSON.parse(JSON.stringify(plan.tareas)); // Copia profunda de las tareas
     actualizarTablaTareas();
@@ -1121,6 +1140,16 @@ function cancelarEdicionPlan() {
     // Eliminar botón cancelar
     const btnCancelar = document.getElementById('cancelar-edicion-plan');
     if (btnCancelar) btnCancelar.remove();
+
+    // Desbloquear selector de equipamiento
+    document.getElementById('equipamiento-plan').disabled = false;
+    
+    // Actualizar contexto
+    actualizarContextoActual();
+    
+
+
+
 }
 
 
@@ -1311,6 +1340,15 @@ function editarTarea(taskKey) {
         };
         btnAgregar.parentNode.insertBefore(btnCancelar, btnAgregar.nextSibling);
     }
+
+     // Marcar visualmente la fila que se está editando
+     const filasTareas = document.querySelectorAll("#tareas-body tr");
+     filasTareas.forEach(fila => {
+         fila.classList.remove('editing-row');
+         if (fila.querySelector('td').textContent === taskKey) {
+             fila.classList.add('editing-row');
+         }
+     });
 }
 
 function procesarCargaMasivaEquipamientos() {
@@ -1595,6 +1633,11 @@ function cancelarEdicionTarea() {
     // Eliminar botón cancelar
     const btnCancelar = document.getElementById('cancelar-edicion-tarea');
     if (btnCancelar) btnCancelar.remove();
+
+    const filasTareas = document.querySelectorAll("#tareas-body tr");
+    filasTareas.forEach(fila => {
+        fila.classList.remove('editing-row');
+    });
 }
 
 
@@ -1615,3 +1658,37 @@ function borrarDatosAlmacenados() {
         alert('Todos los datos han sido borrados.');
     }
 }
+
+// Añadir a la función existente o crear una nueva
+function actualizarContextoActual() {
+    const equipamientoKey = document.getElementById('equipamiento-plan').value;
+    const equipamientoDisplay = document.getElementById('current-equipment-display');
+    const planDisplay = document.getElementById('current-plan-display');
+    const modoIndicator = document.getElementById('current-mode-indicator');
+    
+    if (equipamientoKey) {
+        const equipamiento = datos.equipamientos.find(e => e.key === equipamientoKey);
+        if (equipamiento) {
+            equipamientoDisplay.textContent = `${equipamiento.key} - ${equipamiento.descripcion}`;
+        } else {
+            equipamientoDisplay.textContent = "No seleccionado";
+        }
+    } else {
+        equipamientoDisplay.textContent = "No seleccionado";
+    }
+    
+    if (modoEdicionPlan) {
+        planDisplay.textContent = modoEdicionPlan;
+        modoIndicator.textContent = "Modo: Edición";
+        modoIndicator.className = "mode-indicator editing-mode";
+        document.querySelector('.task-table-container').classList.add('editing-tasks-container');
+    } else {
+        planDisplay.textContent = "Nuevo plan";
+        modoIndicator.textContent = "Modo: Creación";
+        modoIndicator.className = "mode-indicator creation-mode";
+        document.querySelector('.task-table-container').classList.remove('editing-tasks-container');
+    }
+}
+
+// Añadir el evento al selector de equipamiento
+document.getElementById('equipamiento-plan').addEventListener('change', actualizarContextoActual);

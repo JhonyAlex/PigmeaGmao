@@ -301,3 +301,45 @@ td .edit-button, td .delete-button {
 
 
 
+/* Estilos para el panel de contexto */
+.context-panel {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.context-item {
+    min-width: 200px;
+}
+
+.mode-indicator {
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    color: white;
+}
+
+.creation-mode {
+    background-color: #3498db;
+}
+
+.editing-mode {
+    background-color: #f39c12;
+}
+
+/* Resaltar el elemento que se está editando */
+.editing-row {
+    background-color: rgba(243, 156, 18, 0.1) !important;
+}
+
+/* Añadir un borde al panel de tareas durante la edición */
+.editing-tasks-container {
+    border: 2px solid #f39c12;
+    border-radius: 4px;
+    padding: 10px;
+}
