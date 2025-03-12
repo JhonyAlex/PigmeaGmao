@@ -956,6 +956,7 @@ function cancelarEdicionPlan() {
 
 
 
+// Corregir la función editarPreventivo
 let modoEdicionPreventivo = null;
 
 function editarPreventivo(id) {
@@ -966,25 +967,50 @@ function editarPreventivo(id) {
     modoEdicionPreventivo = id;
     
     // Rellenar campos
-    document.getElementById('id-inicial').value = preventivo.id;
     document.getElementById('equipamiento-preventivo').value = preventivo.asset;
     
-    // Necesitamos actualizar los selectores de planes basados en el equipamiento
+    // Actualizar selector de planes basado en el equipamiento
     actualizarSelectorPlanes();
     
-    // Seleccionar planes
-    const planesPreventivo = document.getElementById('planes-preventivo');
-    const planesPreventivoOptions = Array.from(planesPreventivo.options);
+    // Seleccionar planes que están en uso en el preventivo
+    const planesSeleccionados = preventivo.plannedWork.map(pw => pw.maintenancePlan);
+    const planesSelect = document.getElementById('planes-preventivo');
     
-    preventivo.plannedWork.forEach(pw => {
-        const option = planesPreventivoOptions.find(opt => opt.value === pw.maintenancePlan);
-        if (option) option.selected = true;
+    Array.from(planesSelect.options).forEach(option => {
+        option.selected = planesSeleccionados.includes(option.value);
     });
     
     // Actualizar contenedor de frecuencias
     actualizarFrecuencias();
     
-    // Configurar
+    // Una vez que se han actualizado las frecuencias, establecer los valores
+    setTimeout(() => {
+        preventivo.plannedWork.forEach(pw => {
+            const frequencySelect = document.getElementById(`frequency-${pw.maintenancePlan}`);
+            const occursInput = document.getElementById(`occurs-${pw.maintenancePlan}`);
+            
+            if (frequencySelect && occursInput) {
+                frequencySelect.value = pw.frequency;
+                occursInput.value = pw.occursEvery;
+            }
+        });
+    }, 100);
+    
+    // Cambiar el texto del botón
+    const btnAgregar = document.querySelector('#preventivos button.action-button');
+    btnAgregar.textContent = 'Actualizar Preventivo';
+    btnAgregar.onclick = actualizarPreventivo;
+    
+    // Añadir botón para cancelar edición
+    if (!document.getElementById('cancelar-edicion-preventivo')) {
+        const btnCancelar = document.createElement('button');
+        btnCancelar.id = 'cancelar-edicion-preventivo';
+        btnCancelar.className = 'action-button cancel-button';
+        btnCancelar.textContent = 'Cancelar Edición';
+        btnCancelar.onclick = cancelarEdicionPreventivo;
+        btnAgregar.parentNode.insertBefore(btnCancelar, btnAgregar.nextSibling);
+    }
+}
 
 function actualizarPreventivo() {
     if (!modoEdicionPreventivo) return;
