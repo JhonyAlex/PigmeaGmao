@@ -798,87 +798,6 @@ function actualizarTablaPreventivos() {
     });
 }
 
-function previsualizarDatos(tipo) {
-    const previewText = document.getElementById('preview-text');
-    datos.currentExportType = tipo;
-    let csv = '';
-    let hasData = false;
-
-    switch (tipo) {
-        case 'equipamientos':
-            if (datos.equipamientos.length > 0) {
-                hasData = true;
-                csv = 'Key,Descripcion\n';
-                datos.equipamientos.forEach(e => {
-                    csv += `${escapeCSV(e.key)},${escapeCSV(e.descripcion)}\n`;
-                });
-            }
-            break;
-            
-        case 'planes':
-            if (datos.planes.length > 0) {
-                hasData = true;
-                csv = 'MaintenancePlanKey,Descripcion\n';
-                datos.planes.forEach(p => {
-                    csv += `${escapeCSV(p.planKey)},${escapeCSV(p.descripcion)}\n`;
-                });
-            }
-            break;
-            
-        case 'tareas':
-            hasData = datos.planes.some(p => p.tareas && p.tareas.length > 0);
-            if (hasData) {
-                csv = 'MaintenancePlanKey,TaskKey,Descripcion,Duracion\n';
-                datos.planes.forEach(p => {
-                    if (p.tareas) {
-                        p.tareas.forEach(t => {
-                            csv += `${escapeCSV(p.planKey)},${escapeCSV(t.taskKey)},${escapeCSV(t.descripcion)},${escapeCSV(t.duracion)}\n`;
-                        });
-                    }
-                });
-            }
-            break;
-            
-        case 'preventivos':
-            if (datos.preventivos.length > 0) {
-                hasData = true;
-                csv = 'PreventiveMaintenanceId,Descripcion,Asset\n';
-                datos.preventivos.forEach(p => {
-                    csv += `${escapeCSV(p.preventiveMaintenanceId)},${escapeCSV(p.descripcion)},${escapeCSV(p.asset)}\n`;
-                });
-            }
-            break;
-            
-        case 'planned-work':
-            hasData = datos.preventivos.some(p => p.plannedWork && p.plannedWork.length > 0);
-            if (hasData) {
-                csv = 'PreventiveMaintenanceId,MaintenancePlan,Frequency,OccursEvery\n';
-                datos.preventivos.forEach(p => {
-                    if (p.plannedWork) {
-                        p.plannedWork.forEach(pw => {
-                            csv += `${escapeCSV(pw.preventiveMaintenanceId)},${escapeCSV(pw.maintenancePlan)},${escapeCSV(pw.frequency)},${escapeCSV(pw.occursEvery)}\n`;
-                        });
-                    }
-                });
-            }
-            break;
-    }
-
-    if (!hasData) {
-        previewText.textContent = 'No hay datos disponibles para mostrar.';
-    } else {
-        previewText.textContent = csv;
-    }
-
-    // Mostrar/ocultar botones según si hay datos
-    document.getElementById('copy-button').style.display = hasData ? 'inline-block' : 'none';
-    document.getElementById('download-button').style.display = hasData ? 'inline-block' : 'none';
-    
-    const toggleButton = document.getElementById('toggle-view-button');
-    if (toggleButton) {
-        toggleButton.style.display = hasData ? 'inline-block' : 'none';
-    }
-}
 
 function copiarAlPortapapeles() {
     const previewText = document.getElementById('preview-text');
@@ -1937,66 +1856,95 @@ function crearPlannedWork(preventiveMaintenanceId, plan) {
 
 
 
+
+
+
+
+
+
+
+
 function previsualizarDatos(tipo) {
     const previewText = document.getElementById('preview-text');
     datos.currentExportType = tipo;
     let csv = '';
-    
+    let hasData = false;
+
     switch (tipo) {
         case 'equipamientos':
-            csv = 'Key,Descripcion\n';
-            datos.equipamientos.forEach(e => {
-                csv += `${escapeCSV(e.key)},${escapeCSV(e.descripcion)}\n`;
-            });
+            if (datos.equipamientos.length > 0) {
+                hasData = true;
+                csv = 'Key,Descripcion\n';
+                datos.equipamientos.forEach(e => {
+                    csv += `${escapeCSV(e.key)},${escapeCSV(e.descripcion)}\n`;
+                });
+            }
             break;
             
         case 'planes':
-            csv = 'MaintenancePlanKey,Descripcion\n';
-            datos.planes.forEach(p => {
-                csv += `${escapeCSV(p.planKey)},${escapeCSV(p.descripcion)}\n`;
-            });
+            if (datos.planes.length > 0) {
+                hasData = true;
+                csv = 'MaintenancePlanKey,Descripcion\n';
+                datos.planes.forEach(p => {
+                    csv += `${escapeCSV(p.planKey)},${escapeCSV(p.descripcion)}\n`;
+                });
+            }
             break;
             
         case 'tareas':
-            csv = 'MaintenancePlanKey,TaskKey,Descripcion,Duracion\n';
-            datos.planes.forEach(p => {
-                p.tareas.forEach(t => {
-                    csv += `${escapeCSV(p.planKey)},${escapeCSV(t.taskKey)},${escapeCSV(t.descripcion)},${escapeCSV(t.duracion)}\n`;
+            hasData = datos.planes.some(p => p.tareas && p.tareas.length > 0);
+            if (hasData) {
+                csv = 'MaintenancePlanKey,TaskKey,Descripcion,Duracion\n';
+                datos.planes.forEach(p => {
+                    if (p.tareas) {
+                        p.tareas.forEach(t => {
+                            csv += `${escapeCSV(p.planKey)},${escapeCSV(t.taskKey)},${escapeCSV(t.descripcion)},${escapeCSV(t.duracion)}\n`;
+                        });
+                    }
                 });
-            });
+            }
             break;
             
         case 'preventivos':
-            csv = 'PreventiveMaintenanceId,Descripcion,Asset\n';
-            datos.preventivos.forEach(p => {
-                csv += `${escapeCSV(p.preventiveMaintenanceId)},${escapeCSV(p.descripcion)},${escapeCSV(p.asset)}\n`;
-            });
+            if (datos.preventivos.length > 0) {
+                hasData = true;
+                csv = 'PreventiveMaintenanceId,Descripcion,Asset\n';
+                datos.preventivos.forEach(p => {
+                    csv += `${escapeCSV(p.preventiveMaintenanceId)},${escapeCSV(p.descripcion)},${escapeCSV(p.asset)}\n`;
+                });
+            }
             break;
             
         case 'planned-work':
-            csv = 'PreventiveMaintenanceId,MaintenancePlan,Frequency,OccursEvery\n';
-            datos.preventivos.forEach(p => {
-                p.plannedWork.forEach(pw => {
-                    csv += `${escapeCSV(pw.preventiveMaintenanceId)},${escapeCSV(pw.maintenancePlan)},${escapeCSV(pw.frequency)},${escapeCSV(pw.occursEvery)}\n`;
+            hasData = datos.preventivos.some(p => p.plannedWork && p.plannedWork.length > 0);
+            if (hasData) {
+                csv = 'PreventiveMaintenanceId,MaintenancePlan,Frequency,OccursEvery\n';
+                datos.preventivos.forEach(p => {
+                    if (p.plannedWork) {
+                        p.plannedWork.forEach(pw => {
+                            csv += `${escapeCSV(pw.preventiveMaintenanceId)},${escapeCSV(pw.maintenancePlan)},${escapeCSV(pw.frequency)},${escapeCSV(pw.occursEvery)}\n`;
+                        });
+                    }
                 });
-            });
+            }
             break;
     }
+
+    if (!hasData) {
+        previewText.textContent = 'No hay datos disponibles para mostrar.';
+    } else {
+        previewText.textContent = csv;
+    }
+
+    // Mostrar/ocultar botones según si hay datos
+    document.getElementById('copy-button').style.display = hasData ? 'inline-block' : 'none';
+    document.getElementById('download-button').style.display = hasData ? 'inline-block' : 'none';
     
-    previewText.textContent = csv;
-    document.getElementById('copy-button').style.display = 'inline-block';
-    document.getElementById('download-button').style.display = 'inline-block';
+    const toggleButton = document.getElementById('toggle-view-button');
+    if (toggleButton) {
+        toggleButton.style.display = hasData ? 'inline-block' : 'none';
+    }
 }
-
-
-
-
-
-
-
-
-
-
 
 
 
