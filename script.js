@@ -28,6 +28,7 @@ function parseTabSeparatedValues(text) {
 function escapeCSV(text) {
     if (text === null || text === undefined) return '';
     const t = String(text);
+    
     // Si contiene comillas, comas o saltos de línea, escapar las comillas y envolver en comillas
     if (t.includes('"') || t.includes(',') || t.includes('\n')) {
         return t.replace(/"/g, '""');
@@ -46,9 +47,28 @@ function openTab(tabName) {
     for (let i = 0; i < tabButtons.length; i++) {
         tabButtons[i].classList.remove('active');
     }
-    if (document.querySelector(".tab-content.active") && document.querySelector('.tab-content.active').id === 'planes' && tabName !== 'planes') {
+    
+    // Limpiar estados de edición al cambiar pestañas
+    const currentTab = document.querySelector(".tab-content.active")?.id;
+    
+    if (currentTab === 'equipamientos' && tabName !== 'equipamientos' && modoEdicionEquipamiento) {
+        cancelarEdicionEquipamiento();
+    }
+    
+    if (currentTab === 'planes' && tabName !== 'planes') {
+        if (modoEdicionPlan) {
+            cancelarEdicionPlan();
+        }
+        if (modoEdicionTarea) {
+            cancelarEdicionTarea();
+        }
         datos.tareasTemp = [];
     }
+    
+    if (currentTab === 'preventivos' && tabName !== 'preventivos' && modoEdicionPreventivo) {
+        cancelarEdicionPreventivo();
+    }
+    
     document.getElementById(tabName).classList.add('active');
     document.querySelector(`.tab-button[onclick="openTab('${tabName}')"]`).classList.add('active');
     
@@ -60,7 +80,6 @@ function openTab(tabName) {
         actualizarSelectorPlanes();
     }
 }
-
 
 
 
@@ -346,6 +365,15 @@ function actualizarTablaTareas() {
         tdDuracion.textContent = tarea.duracion;
         
         const tdActions = document.createElement('td');
+        
+        // Botón de edición
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit-button';
+        editBtn.textContent = 'Editar';
+        editBtn.onclick = () => editarTarea(tarea.taskKey);
+        tdActions.appendChild(editBtn);
+        
+        // Botón de eliminación
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-button';
         deleteBtn.textContent = 'Eliminar';
@@ -689,6 +717,15 @@ function actualizarTablaPreventivos() {
         tdPlanes.textContent = planesTexto;
         
         const tdActions = document.createElement('td');
+        
+        // Botón de edición
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit-button';
+        editBtn.textContent = 'Editar';
+        editBtn.onclick = () => editarPreventivo(preventivo.id);
+        tdActions.appendChild(editBtn);
+        
+        // Botón de eliminación
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-button';
         deleteBtn.textContent = 'Eliminar';
@@ -705,7 +742,6 @@ function actualizarTablaPreventivos() {
     });
 }
 
-// Funciones para exportar datos
 function previsualizarDatos(tipo) {
     const previewText = document.getElementById('preview-text');
     datos.currentExportType = tipo;
@@ -715,14 +751,14 @@ function previsualizarDatos(tipo) {
         case 'equipamientos':
             csv = 'Key,Descripcion\n';
             datos.equipamientos.forEach(e => {
-                csv += `"${escapeCSV(e.key)}","${escapeCSV(e.descripcion)}"\n`;
+                csv += `${escapeCSV(e.key)},${escapeCSV(e.descripcion)}\n`;
             });
             break;
             
         case 'planes':
             csv = 'MaintenancePlanKey,Descripcion\n';
             datos.planes.forEach(p => {
-                csv += `"${escapeCSV(p.planKey)}","${escapeCSV(p.descripcion)}"\n`;
+                csv += `${escapeCSV(p.planKey)},${escapeCSV(p.descripcion)}\n`;
             });
             break;
             
@@ -730,7 +766,7 @@ function previsualizarDatos(tipo) {
             csv = 'MaintenancePlanKey,TaskKey,Descripcion,Duracion\n';
             datos.planes.forEach(p => {
                 p.tareas.forEach(t => {
-                    csv += `"${escapeCSV(p.planKey)}","${escapeCSV(t.taskKey)}","${escapeCSV(t.descripcion)}","${escapeCSV(t.duracion)}"\n`;
+                    csv += `${escapeCSV(p.planKey)},${escapeCSV(t.taskKey)},${escapeCSV(t.descripcion)},${escapeCSV(t.duracion)}\n`;
                 });
             });
             break;
@@ -738,7 +774,7 @@ function previsualizarDatos(tipo) {
         case 'preventivos':
             csv = 'PreventiveMaintenanceId,Descripcion,Asset\n';
             datos.preventivos.forEach(p => {
-                csv += `"${escapeCSV(p.preventiveMaintenanceId)}","${escapeCSV(p.descripcion)}","${escapeCSV(p.asset)}"\n`;
+                csv += `${escapeCSV(p.preventiveMaintenanceId)},${escapeCSV(p.descripcion)},${escapeCSV(p.asset)}\n`;
             });
             break;
             
@@ -746,7 +782,7 @@ function previsualizarDatos(tipo) {
             csv = 'PreventiveMaintenanceId,MaintenancePlan,Frequency,OccursEvery\n';
             datos.preventivos.forEach(p => {
                 p.plannedWork.forEach(pw => {
-                    csv += `"${escapeCSV(pw.preventiveMaintenanceId)}","${escapeCSV(pw.maintenancePlan)}","${escapeCSV(pw.frequency)}","${escapeCSV(pw.occursEvery)}"\n`;
+                    csv += `${escapeCSV(pw.preventiveMaintenanceId)},${escapeCSV(pw.maintenancePlan)},${escapeCSV(pw.frequency)},${escapeCSV(pw.occursEvery)}\n`;
                 });
             });
             break;
@@ -805,15 +841,13 @@ function editarPlan(planKey) {
     document.getElementById('periodicidad').value = plan.periodicidad;
     
     // Cargar las tareas del plan en tareasTemp
-    datos.tareasTemp = [...plan.tareas];
+    datos.tareasTemp = JSON.parse(JSON.stringify(plan.tareas)); // Copia profunda de las tareas
     actualizarTablaTareas();
     
     // Cambiar el texto del botón
-    const btnAgregar = document.querySelector('#planes .action-button[onclick="agregarPlanMantenimiento()"]');
+    const btnAgregar = document.querySelector('#planes button.action-button:not(.add-task-btn)');
     btnAgregar.textContent = 'Actualizar Plan';
-    btnAgregar.onclick = function() {
-        actualizarPlan();
-    };
+    btnAgregar.onclick = actualizarPlan;
     
     // Añadir botón para cancelar edición
     if (!document.getElementById('cancelar-edicion-plan')) {
@@ -821,9 +855,7 @@ function editarPlan(planKey) {
         btnCancelar.id = 'cancelar-edicion-plan';
         btnCancelar.className = 'action-button cancel-button';
         btnCancelar.textContent = 'Cancelar Edición';
-        btnCancelar.onclick = function() {
-            cancelarEdicionPlan();
-        };
+        btnCancelar.onclick = cancelarEdicionPlan;
         btnAgregar.parentNode.insertBefore(btnCancelar, btnAgregar.nextSibling);
     }
 }
@@ -910,18 +942,18 @@ function cancelarEdicionPlan() {
     actualizarTablaTareas();
     
     // Restaurar el botón a estado original
-    const btnAgregar = document.querySelector('#planes .action-button[onclick="actualizarPlan()"]');
+    const btnAgregar = document.querySelector('#planes button.action-button:not(.add-task-btn)');
     if (btnAgregar) {
         btnAgregar.textContent = 'Agregar Plan';
-        btnAgregar.onclick = function() {
-            agregarPlanMantenimiento();
-        };
+        btnAgregar.onclick = agregarPlanMantenimiento;
     }
     
     // Eliminar botón cancelar
     const btnCancelar = document.getElementById('cancelar-edicion-plan');
     if (btnCancelar) btnCancelar.remove();
 }
+
+
 
 
 let modoEdicionPreventivo = null;
@@ -954,16 +986,188 @@ function editarPreventivo(id) {
     
     // Configurar
 
+function actualizarPreventivo() {
+    if (!modoEdicionPreventivo) return;
+    
+    const equipamientoKey = document.getElementById('equipamiento-preventivo').value;
+    const planesSeleccionados = Array.from(document.getElementById('planes-preventivo').selectedOptions)
+        .map(option => option.value);
+    
+    if (!equipamientoKey) {
+        alert('Por favor, seleccione un equipamiento.');
+        return;
+    }
+    
+    if (planesSeleccionados.length === 0) {
+        alert('Por favor, seleccione al menos un plan de mantenimiento.');
+        return;
+    }
+    
+    // Verificar que las frecuencias estén configuradas correctamente
+    const frecuencias = [];
+    for (const planKey of planesSeleccionados) {
+        const frequency = document.getElementById(`frequency-${planKey}`).value;
+        const occursEvery = parseInt(document.getElementById(`occurs-${planKey}`).value);
+        
+        if (!frequency || isNaN(occursEvery) || occursEvery < 1) {
+            alert(`Por favor, configure correctamente la frecuencia para el plan ${planKey}.`);
+            return;
+        }
+        
+        frecuencias.push({
+            planKey,
+            frequency,
+            occursEvery
+        });
+    }
+    
+    // Encontrar el equipamiento seleccionado
+    const equipamiento = datos.equipamientos.find(e => e.key === equipamientoKey);
+    if (!equipamiento) {
+        alert('El equipamiento seleccionado no es válido.');
+        return;
+    }
+    
+    const preventivo = datos.preventivos.find(p => p.id === modoEdicionPreventivo);
+    if (!preventivo) return;
+    
+    const preventiveMaintenanceId = preventivo.preventiveMaintenanceId;
+    const descripcionPreventivo = `Prev. ${equipamiento.descripcion} (${equipamiento.prefijo})`;
+    
+    const plannedWork = frecuencias.map(f => {
+        return {
+            preventiveMaintenanceId,
+            maintenancePlan: f.planKey,
+            frequency: f.frequency,
+            occursEvery: f.occursEvery
+        };
+    });
+    
+    // Actualizar el preventivo
+    const index = datos.preventivos.findIndex(p => p.id === modoEdicionPreventivo);
+    if (index !== -1) {
+        datos.preventivos[index] = {
+            id: modoEdicionPreventivo,
+            preventiveMaintenanceId,
+            descripcion: truncateText(descripcionPreventivo, 100),
+            asset: equipamientoKey,
+            plannedWork
+        };
+        
+        actualizarTablaPreventivos();
+        cancelarEdicionPreventivo();
+    }
+}
 
+function cancelarEdicionPreventivo() {
+    modoEdicionPreventivo = null;
+    
+    // Desmarcar planes seleccionados
+    const planesSelect = document.getElementById('planes-preventivo');
+    Array.from(planesSelect.options).forEach(option => option.selected = false);
+    
+    // Limpiar contenedor de frecuencias
+    document.getElementById('frecuencias-container').innerHTML = '';
+    
+    // Restaurar el botón a estado original
+    const btnAgregar = document.querySelector('#preventivos button.action-button');
+    if (btnAgregar) {
+        btnAgregar.textContent = 'Agregar Preventivo';
+        btnAgregar.onclick = agregarPreventivo;
+    }
+    
+    // Eliminar botón cancelar
+    const btnCancelar = document.getElementById('cancelar-edicion-preventivo');
+    if (btnCancelar) btnCancelar.remove();
+}}
 
+let modoEdicionTarea = null;
 
+function editarTarea(taskKey) {
+    const tarea = datos.tareasTemp.find(t => t.taskKey === taskKey);
+    if (!tarea) return;
+    
+    // Establecer modo edición
+    modoEdicionTarea = taskKey;
+    
+    // Rellenar campos con datos actuales
+    document.getElementById('task-key').value = tarea.taskKey;
+    document.getElementById('task-descripcion').value = tarea.descripcion;
+    document.getElementById('task-duracion').value = tarea.duracion;
+    
+    // Cambiar el texto del botón
+    const btnAgregar = document.querySelector('.add-task-btn');
+    btnAgregar.textContent = 'Actualizar Tarea';
+    btnAgregar.onclick = function() {
+        actualizarTarea();
+    };
+    
+    // Añadir botón para cancelar edición
+    if (!document.getElementById('cancelar-edicion-tarea')) {
+        const btnCancelar = document.createElement('button');
+        btnCancelar.id = 'cancelar-edicion-tarea';
+        btnCancelar.className = 'action-button cancel-button';
+        btnCancelar.textContent = 'Cancelar';
+        btnCancelar.onclick = function() {
+            cancelarEdicionTarea();
+        };
+        btnAgregar.parentNode.insertBefore(btnCancelar, btnAgregar.nextSibling);
+    }
+}
 
+function actualizarTarea() {
+    if (!modoEdicionTarea) return;
+    
+    const taskKey = document.getElementById('task-key').value.trim();
+    const descripcion = document.getElementById('task-descripcion').value.trim();
+    const duracion = document.getElementById('task-duracion').value.trim();
+    
+    if (!taskKey || !descripcion || !duracion) {
+        alert('Por favor, complete todos los campos de la tarea.');
+        return;
+    }
+    
+    if (!validateDuration(duracion)) {
+        alert(`Formato de duración incorrecto. Debe ser H:MM:SS`);
+        return;
+    }
+    
+    // Si la clave cambia, verificar que no exista otra con la misma clave
+    if (taskKey !== modoEdicionTarea && datos.tareasTemp.some(t => t.taskKey === taskKey)) {
+        alert('Ya existe una tarea con esta clave.');
+        return;
+    }
+    
+    // Actualizar la tarea
+    const index = datos.tareasTemp.findIndex(t => t.taskKey === modoEdicionTarea);
+    if (index !== -1) {
+        datos.tareasTemp[index] = {
+            taskKey,
+            descripcion: truncateText(descripcion, 100),
+            duracion
+        };
+        
+        actualizarTablaTareas();
+        cancelarEdicionTarea();
+    }
+}
 
-
-// Inicialización
-document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar la primera pestaña como activa
-    document.querySelector('.tab-button').classList.add('active');
-    document.querySelector('.tab-content').classList.add('active');
-});
+function cancelarEdicionTarea() {
+    modoEdicionTarea = null;
+    
+    // Limpiar campos de tarea
+    document.getElementById('task-key').value = '';
+    document.getElementById('task-descripcion').value = '';
+    document.getElementById('task-duracion').value = '';
+    
+    // Restaurar el botón a estado original
+    const btnAgregar = document.querySelector('.add-task-btn');
+    btnAgregar.textContent = 'Añadir Tarea';
+    btnAgregar.onclick = function() {
+        agregarTarea();
+    };
+    
+    // Eliminar botón cancelar
+    const btnCancelar = document.getElementById('cancelar-edicion-tarea');
+    if (btnCancelar) btnCancelar.remove();
 }
