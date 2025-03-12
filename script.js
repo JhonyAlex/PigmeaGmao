@@ -1105,7 +1105,9 @@ function cancelarEdicionPreventivo() {
     // Eliminar botón cancelar
     const btnCancelar = document.getElementById('cancelar-edicion-preventivo');
     if (btnCancelar) btnCancelar.remove();
-}}
+} // Elimina la llave extra que hay aquí
+
+
 
 let modoEdicionTarea = null;
 
