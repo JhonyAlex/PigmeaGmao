@@ -1905,6 +1905,71 @@ function crearPlannedWork(preventiveMaintenanceId, plan) {
 }
 
 
+
+function previsualizarDatos(tipo) {
+    const previewText = document.getElementById('preview-text');
+    datos.currentExportType = tipo;
+    let csv = '';
+    
+    switch (tipo) {
+        case 'equipamientos':
+            csv = 'Key,Descripcion\n';
+            datos.equipamientos.forEach(e => {
+                csv += `${escapeCSV(e.key)},${escapeCSV(e.descripcion)}\n`;
+            });
+            break;
+            
+        case 'planes':
+            csv = 'MaintenancePlanKey,Descripcion\n';
+            datos.planes.forEach(p => {
+                csv += `${escapeCSV(p.planKey)},${escapeCSV(p.descripcion)}\n`;
+            });
+            break;
+            
+        case 'tareas':
+            csv = 'MaintenancePlanKey,TaskKey,Descripcion,Duracion\n';
+            datos.planes.forEach(p => {
+                p.tareas.forEach(t => {
+                    csv += `${escapeCSV(p.planKey)},${escapeCSV(t.taskKey)},${escapeCSV(t.descripcion)},${escapeCSV(t.duracion)}\n`;
+                });
+            });
+            break;
+            
+        case 'preventivos':
+            csv = 'PreventiveMaintenanceId,Descripcion,Asset\n';
+            datos.preventivos.forEach(p => {
+                csv += `${escapeCSV(p.preventiveMaintenanceId)},${escapeCSV(p.descripcion)},${escapeCSV(p.asset)}\n`;
+            });
+            break;
+            
+        case 'planned-work':
+            csv = 'PreventiveMaintenanceId,MaintenancePlan,Frequency,OccursEvery\n';
+            datos.preventivos.forEach(p => {
+                p.plannedWork.forEach(pw => {
+                    csv += `${escapeCSV(pw.preventiveMaintenanceId)},${escapeCSV(pw.maintenancePlan)},${escapeCSV(pw.frequency)},${escapeCSV(pw.occursEvery)}\n`;
+                });
+            });
+            break;
+    }
+    
+    previewText.textContent = csv;
+    document.getElementById('copy-button').style.display = 'inline-block';
+    document.getElementById('download-button').style.display = 'inline-block';
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function previsualizarDatosExcel(tipo) {
     const previewContainer = document.getElementById('preview-text');
     previewContainer.innerHTML = ''; // Limpiar contenido previo
