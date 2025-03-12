@@ -1903,3 +1903,118 @@ function crearPlannedWork(preventiveMaintenanceId, plan) {
         occursEvery
     };
 }
+
+
+function previsualizarDatosExcel(tipo) {
+    const previewContainer = document.getElementById('preview-text');
+    previewContainer.innerHTML = ''; // Limpiar contenido previo
+    datos.currentExportType = tipo;
+    
+    // Crear tabla para previsualizar datos
+    const table = document.createElement('table');
+    table.className = 'excel-preview-table';
+    
+    switch (tipo) {
+        case 'equipamientos':
+            // Agregar encabezado
+            let headerRow = document.createElement('tr');
+            headerRow.innerHTML = '<th>Key</th><th>Descripcion</th>';
+            table.appendChild(headerRow);
+            
+            // Agregar filas de datos
+            datos.equipamientos.forEach(e => {
+                let row = document.createElement('tr');
+                row.innerHTML = `<td>${e.key}</td><td>${e.descripcion}</td>`;
+                table.appendChild(row);
+            });
+            break;
+            
+        case 'planes':
+            headerRow = document.createElement('tr');
+            headerRow.innerHTML = '<th>MaintenancePlanKey</th><th>Descripcion</th>';
+            table.appendChild(headerRow);
+            
+            datos.planes.forEach(p => {
+                let row = document.createElement('tr');
+                row.innerHTML = `<td>${p.planKey}</td><td>${p.descripcion}</td>`;
+                table.appendChild(row);
+            });
+            break;
+            
+        case 'tareas':
+            headerRow = document.createElement('tr');
+            headerRow.innerHTML = '<th>MaintenancePlanKey</th><th>TaskKey</th><th>Descripcion</th><th>Duracion</th>';
+            table.appendChild(headerRow);
+            
+            datos.planes.forEach(p => {
+                p.tareas.forEach(t => {
+                    let row = document.createElement('tr');
+                    row.innerHTML = `<td>${p.planKey}</td><td>${t.taskKey}</td><td>${t.descripcion}</td><td>${t.duracion}</td>`;
+                    table.appendChild(row);
+                });
+            });
+            break;
+            
+        case 'preventivos':
+            headerRow = document.createElement('tr');
+            headerRow.innerHTML = '<th>PreventiveMaintenanceId</th><th>Descripcion</th><th>Asset</th>';
+            table.appendChild(headerRow);
+            
+            datos.preventivos.forEach(p => {
+                let row = document.createElement('tr');
+                row.innerHTML = `<td>${p.preventiveMaintenanceId}</td><td>${p.descripcion}</td><td>${p.asset}</td>`;
+                table.appendChild(row);
+            });
+            break;
+            
+        case 'planned-work':
+            headerRow = document.createElement('tr');
+            headerRow.innerHTML = '<th>PreventiveMaintenanceId</th><th>MaintenancePlan</th><th>Frequency</th><th>OccursEvery</th>';
+            table.appendChild(headerRow);
+            
+            datos.preventivos.forEach(p => {
+                p.plannedWork.forEach(pw => {
+                    let row = document.createElement('tr');
+                    row.innerHTML = `<td>${pw.preventiveMaintenanceId}</td><td>${pw.maintenancePlan}</td><td>${pw.frequency}</td><td>${pw.occursEvery}</td>`;
+                    table.appendChild(row);
+                });
+            });
+            break;
+    }
+    
+    previewContainer.appendChild(table);
+    document.getElementById('copy-button').style.display = 'inline-block';
+    document.getElementById('download-button').style.display = 'inline-block';
+    
+    // Añadir también un botón para alternar entre vista tabla y texto plano
+    if (!document.getElementById('toggle-view-button')) {
+        const toggleButton = document.createElement('button');
+        toggleButton.id = 'toggle-view-button';
+        toggleButton.className = 'action-button';
+        toggleButton.textContent = 'Cambiar a Vista Texto';
+        toggleButton.onclick = function() {
+            togglePreviewView(tipo);
+        };
+        document.getElementById('copy-button').parentNode.insertBefore(
+            toggleButton, 
+            document.getElementById('copy-button').nextSibling
+        );
+    } else {
+        document.getElementById('toggle-view-button').textContent = 'Cambiar a Vista Texto';
+    }
+}
+
+function togglePreviewView(tipo) {
+    const previewContainer = document.getElementById('preview-text');
+    const toggleButton = document.getElementById('toggle-view-button');
+    
+    if (previewContainer.querySelector('table')) {
+        // Cambiar a vista de texto
+        previsualizarDatos(tipo);
+        toggleButton.textContent = 'Cambiar a Vista Tabla';
+    } else {
+        // Cambiar a vista de tabla
+        previsualizarDatosExcel(tipo);
+        toggleButton.textContent = 'Cambiar a Vista Texto';
+    }
+}
