@@ -30,9 +30,9 @@ function escapeCSV(text) {
     const t = String(text);
     // Si contiene comillas, comas o saltos de línea, escapar las comillas y envolver en comillas
     if (t.includes('"') || t.includes(',') || t.includes('\n')) {
-        return '"' + t.replace(/"/g, '""') + '"';
+        return t.replace(/"/g, '""');
     }
-    return '"' + t + '"';
+    return t;
 }
 
 // Función para abrir pestañas
@@ -60,6 +60,130 @@ function openTab(tabName) {
         actualizarSelectorPlanes();
     }
 }
+
+
+
+
+let modoEdicionEquipamiento = null;
+
+function editarEquipamiento(key) {
+    const equipamiento = datos.equipamientos.find(e => e.key === key);
+    if (!equipamiento) return;
+    
+    // Establecer modo edición
+    modoEdicionEquipamiento = key;
+    
+    // Rellenar campos con datos actuales
+    document.getElementById('prefijo-equipo').value = equipamiento.prefijo;
+    document.getElementById('codigo-equipo').value = equipamiento.codigo;
+    document.getElementById('descripcion-equipo').value = equipamiento.descripcion;
+    
+    // Cambiar el texto del botón
+    const btnAgregar = document.querySelector('#equipamientos .action-button');
+    btnAgregar.textContent = 'Actualizar Equipamiento';
+    btnAgregar.onclick = function() {
+        actualizarEquipamiento();
+    };
+    
+    // Añadir botón para cancelar edición
+    if (!document.getElementById('cancelar-edicion-equipamiento')) {
+        const btnCancelar = document.createElement('button');
+        btnCancelar.id = 'cancelar-edicion-equipamiento';
+        btnCancelar.className = 'action-button cancel-button';
+        btnCancelar.textContent = 'Cancelar Edición';
+        btnCancelar.onclick = function() {
+            cancelarEdicionEquipamiento();
+        };
+        btnAgregar.parentNode.insertBefore(btnCancelar, btnAgregar.nextSibling);
+    }
+}
+
+function actualizarEquipamiento() {
+    if (!modoEdicionEquipamiento) return;
+    
+    const prefijo = document.getElementById('prefijo-equipo').value.trim();
+    const codigo = document.getElementById('codigo-equipo').value.trim();
+    const descripcion = document.getElementById('descripcion-equipo').value.trim();
+    
+    if (!prefijo || !codigo || !descripcion) {
+        alert('Por favor, complete todos los campos del equipamiento.');
+        return;
+    }
+    
+    const newKey = `${prefijo}-${codigo}`;
+    
+    // Si la clave cambia, verificar que no exista otra igual
+    if (newKey !== modoEdicionEquipamiento && datos.equipamientos.some(e => e.key === newKey)) {
+        alert('Ya existe un equipamiento con esta clave.');
+        return;
+    }
+    
+    // Verificar si el equipamiento está en uso en planes o preventivos
+    const enUsoPlan = datos.planes.some(plan => plan.equipamientoKey === modoEdicionEquipamiento);
+    const enUsoPreventivo = datos.preventivos.some(prev => prev.asset === modoEdicionEquipamiento);
+    
+    // Si está en uso y la clave va a cambiar, avisar y cancelar
+    if ((enUsoPlan || enUsoPreventivo) && newKey !== modoEdicionEquipamiento) {
+        alert('No puede cambiar la clave porque este equipamiento está siendo utilizado en planes o preventivos.');
+        return;
+    }
+    
+    // Actualizar el equipamiento
+    const index = datos.equipamientos.findIndex(e => e.key === modoEdicionEquipamiento);
+    if (index !== -1) {
+        datos.equipamientos[index] = {
+            key: newKey,
+            prefijo,
+            codigo,
+            descripcion: truncateText(descripcion, 100)
+        };
+        
+        // Si la clave cambió, actualizar referencias en planes y preventivos
+        if (newKey !== modoEdicionEquipamiento) {
+            datos.planes.forEach(plan => {
+                if (plan.equipamientoKey === modoEdicionEquipamiento) {
+                    plan.equipamientoKey = newKey;
+                    plan.equipamientoPrefijo = prefijo;
+                }
+            });
+            
+            datos.preventivos.forEach(prev => {
+                if (prev.asset === modoEdicionEquipamiento) {
+                    prev.asset = newKey;
+                }
+            });
+        }
+        
+        actualizarTablaEquipamientos();
+        actualizarSelectorEquipamientos('equipamiento-plan');
+        actualizarSelectorEquipamientos('equipamiento-preventivo');
+        cancelarEdicionEquipamiento();
+    }
+}
+
+function cancelarEdicionEquipamiento() {
+    modoEdicionEquipamiento = null;
+    
+    // Limpiar formulario
+    document.getElementById('prefijo-equipo').value = '';
+    document.getElementById('codigo-equipo').value = '';
+    document.getElementById('descripcion-equipo').value = '';
+    
+    // Restaurar el botón a estado original
+    const btnAgregar = document.querySelector('#equipamientos .action-button');
+    btnAgregar.textContent = 'Agregar Equipamiento';
+    btnAgregar.onclick = function() {
+        agregarEquipamiento();
+    };
+    
+    // Eliminar botón cancelar
+    const btnCancelar = document.getElementById('cancelar-edicion-equipamiento');
+    if (btnCancelar) btnCancelar.remove();
+}
+
+
+
+
 
 // Funciones para Equipamientos
 function agregarEquipamiento() {
@@ -128,6 +252,15 @@ function actualizarTablaEquipamientos() {
         tdDesc.textContent = equipamiento.descripcion;
         
         const tdActions = document.createElement('td');
+        
+        // Botón de edición
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit-button';
+        editBtn.textContent = 'Editar';
+        editBtn.onclick = () => editarEquipamiento(equipamiento.key);
+        tdActions.appendChild(editBtn);
+        
+        // Botón de eliminación
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-button';
         deleteBtn.textContent = 'Eliminar';
@@ -322,6 +455,15 @@ function actualizarTablaPlanes() {
         tdTareas.textContent = `${plan.tareas.length} tarea(s)`;
         
         const tdActions = document.createElement('td');
+        
+        // Botón de edición
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit-button';
+        editBtn.textContent = 'Editar';
+        editBtn.onclick = () => editarPlan(plan.planKey);
+        tdActions.appendChild(editBtn);
+        
+        // Botón de eliminación
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-button';
         deleteBtn.textContent = 'Eliminar';
@@ -644,9 +786,186 @@ function descargarCSV() {
     document.body.removeChild(link);
 }
 
+
+
+
+
+let modoEdicionPlan = null;
+
+function editarPlan(planKey) {
+    const plan = datos.planes.find(p => p.planKey === planKey);
+    if (!plan) return;
+    
+    // Establecer modo edición
+    modoEdicionPlan = planKey;
+    
+    // Rellenar campos con datos actuales
+    document.getElementById('equipamiento-plan').value = plan.equipamientoKey;
+    document.getElementById('plan-key').value = plan.planKey;
+    document.getElementById('periodicidad').value = plan.periodicidad;
+    
+    // Cargar las tareas del plan en tareasTemp
+    datos.tareasTemp = [...plan.tareas];
+    actualizarTablaTareas();
+    
+    // Cambiar el texto del botón
+    const btnAgregar = document.querySelector('#planes .action-button[onclick="agregarPlanMantenimiento()"]');
+    btnAgregar.textContent = 'Actualizar Plan';
+    btnAgregar.onclick = function() {
+        actualizarPlan();
+    };
+    
+    // Añadir botón para cancelar edición
+    if (!document.getElementById('cancelar-edicion-plan')) {
+        const btnCancelar = document.createElement('button');
+        btnCancelar.id = 'cancelar-edicion-plan';
+        btnCancelar.className = 'action-button cancel-button';
+        btnCancelar.textContent = 'Cancelar Edición';
+        btnCancelar.onclick = function() {
+            cancelarEdicionPlan();
+        };
+        btnAgregar.parentNode.insertBefore(btnCancelar, btnAgregar.nextSibling);
+    }
+}
+
+function actualizarPlan() {
+    if (!modoEdicionPlan) return;
+    
+    const equipamientoKey = document.getElementById('equipamiento-plan').value;
+    const planKey = document.getElementById('plan-key').value.trim();
+    const periodicidad = document.getElementById('periodicidad').value;
+    
+    if (!equipamientoKey || !planKey || !periodicidad) {
+        alert('Por favor, complete los campos requeridos del plan de mantenimiento.');
+        return;
+    }
+    
+    if (datos.tareasTemp.length === 0) {
+        alert('Por favor, ingrese al menos una tarea.');
+        return;
+    }
+    
+    // Si la clave cambia, verificar que no exista otra igual
+    if (planKey !== modoEdicionPlan && datos.planes.some(p => p.planKey === planKey)) {
+        alert('Ya existe un plan con esta clave.');
+        return;
+    }
+    
+    // Verificar si el plan está en uso en preventivos
+    const enUso = datos.preventivos.some(prev => {
+        return prev.plannedWork.some(pw => pw.maintenancePlan === modoEdicionPlan);
+    });
+    
+    // Si está en uso y la clave va a cambiar, avisar y cancelar
+    if (enUso && planKey !== modoEdicionPlan) {
+        alert('No puede cambiar la clave del plan porque está siendo utilizado en preventivos.');
+        return;
+    }
+    
+    // Encontrar el equipamiento seleccionado
+    const equipamiento = datos.equipamientos.find(e => e.key === equipamientoKey);
+    if (!equipamiento) {
+        alert('El equipamiento seleccionado no es válido.');
+        return;
+    }
+    
+    const descripcionPlan = `${equipamiento.descripcion} - ${periodicidad}`;
+    
+    // Actualizar el plan
+    const index = datos.planes.findIndex(p => p.planKey === modoEdicionPlan);
+    if (index !== -1) {
+        datos.planes[index] = {
+            planKey,
+            equipamientoKey,
+            equipamientoPrefijo: equipamiento.prefijo,
+            descripcion: truncateText(descripcionPlan, 100),
+            periodicidad,
+            tareas: [...datos.tareasTemp]
+        };
+        
+        // Si la clave cambió, actualizar referencias en preventivos
+        if (planKey !== modoEdicionPlan) {
+            datos.preventivos.forEach(prev => {
+                prev.plannedWork.forEach(pw => {
+                    if (pw.maintenancePlan === modoEdicionPlan) {
+                        pw.maintenancePlan = planKey;
+                    }
+                });
+            });
+        }
+        
+        actualizarTablaPlanes();
+        actualizarSelectorPlanes();
+        cancelarEdicionPlan();
+    }
+}
+
+function cancelarEdicionPlan() {
+    modoEdicionPlan = null;
+    
+    // Limpiar formulario
+    document.getElementById('plan-key').value = '';
+    document.getElementById('periodicidad').value = '';
+    datos.tareasTemp = [];
+    actualizarTablaTareas();
+    
+    // Restaurar el botón a estado original
+    const btnAgregar = document.querySelector('#planes .action-button[onclick="actualizarPlan()"]');
+    if (btnAgregar) {
+        btnAgregar.textContent = 'Agregar Plan';
+        btnAgregar.onclick = function() {
+            agregarPlanMantenimiento();
+        };
+    }
+    
+    // Eliminar botón cancelar
+    const btnCancelar = document.getElementById('cancelar-edicion-plan');
+    if (btnCancelar) btnCancelar.remove();
+}
+
+
+let modoEdicionPreventivo = null;
+
+function editarPreventivo(id) {
+    const preventivo = datos.preventivos.find(p => p.id === id);
+    if (!preventivo) return;
+    
+    // Establecer modo edición
+    modoEdicionPreventivo = id;
+    
+    // Rellenar campos
+    document.getElementById('id-inicial').value = preventivo.id;
+    document.getElementById('equipamiento-preventivo').value = preventivo.asset;
+    
+    // Necesitamos actualizar los selectores de planes basados en el equipamiento
+    actualizarSelectorPlanes();
+    
+    // Seleccionar planes
+    const planesPreventivo = document.getElementById('planes-preventivo');
+    const planesPreventivoOptions = Array.from(planesPreventivo.options);
+    
+    preventivo.plannedWork.forEach(pw => {
+        const option = planesPreventivoOptions.find(opt => opt.value === pw.maintenancePlan);
+        if (option) option.selected = true;
+    });
+    
+    // Actualizar contenedor de frecuencias
+    actualizarFrecuencias();
+    
+    // Configurar
+
+
+
+
+
+
+
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializar la primera pestaña como activa
     document.querySelector('.tab-button').classList.add('active');
     document.querySelector('.tab-content').classList.add('active');
 });
+
+
+
