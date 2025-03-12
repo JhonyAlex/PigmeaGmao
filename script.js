@@ -1699,122 +1699,7 @@ document.getElementById('equipamiento-plan').addEventListener('change', actualiz
 
 
 
-function previsualizarDatosExcel(tipo) {
-    const previewContainer = document.getElementById('preview-text');
-    previewContainer.innerHTML = ''; // Limpiar contenido previo
-    datos.currentExportType = tipo;
-    
-    // Crear tabla para previsualizar datos
-    const table = document.createElement('table');
-    table.className = 'excel-preview-table';
-    
-    switch (tipo) {
-        case 'equipamientos':
-            // Agregar encabezado
-            let headerRow = document.createElement('tr');
-            headerRow.innerHTML = '<th>Key</th><th>Descripcion</th>';
-            table.appendChild(headerRow);
-            
-            // Agregar filas de datos
-            datos.equipamientos.forEach(e => {
-                let row = document.createElement('tr');
-                row.innerHTML = `<td>${e.key}</td><td>${e.descripcion}</td>`;
-                table.appendChild(row);
-            });
-            break;
-            
-        case 'planes':
-            headerRow = document.createElement('tr');
-            headerRow.innerHTML = '<th>MaintenancePlanKey</th><th>Descripcion</th>';
-            table.appendChild(headerRow);
-            
-            datos.planes.forEach(p => {
-                let row = document.createElement('tr');
-                row.innerHTML = `<td>${p.planKey}</td><td>${p.descripcion}</td>`;
-                table.appendChild(row);
-            });
-            break;
-            
-        case 'tareas':
-            headerRow = document.createElement('tr');
-            headerRow.innerHTML = '<th>MaintenancePlanKey</th><th>TaskKey</th><th>Descripcion</th><th>Duracion</th>';
-            table.appendChild(headerRow);
-            
-            datos.planes.forEach(p => {
-                p.tareas.forEach(t => {
-                    let row = document.createElement('tr');
-                    row.innerHTML = `<td>${p.planKey}</td><td>${t.taskKey}</td><td>${t.descripcion}</td><td>${t.duracion}</td>`;
-                    table.appendChild(row);
-                });
-            });
-            break;
-            
-        case 'preventivos':
-            headerRow = document.createElement('tr');
-            headerRow.innerHTML = '<th>PreventiveMaintenanceId</th><th>Descripcion</th><th>Asset</th>';
-            table.appendChild(headerRow);
-            
-            datos.preventivos.forEach(p => {
-                let row = document.createElement('tr');
-                row.innerHTML = `<td>${p.preventiveMaintenanceId}</td><td>${p.descripcion}</td><td>${p.asset}</td>`;
-                table.appendChild(row);
-            });
-            break;
-            
-        case 'planned-work':
-            headerRow = document.createElement('tr');
-            headerRow.innerHTML = '<th>PreventiveMaintenanceId</th><th>MaintenancePlan</th><th>Frequency</th><th>OccursEvery</th>';
-            table.appendChild(headerRow);
-            
-            datos.preventivos.forEach(p => {
-                p.plannedWork.forEach(pw => {
-                    let row = document.createElement('tr');
-                    row.innerHTML = `<td>${pw.preventiveMaintenanceId}</td><td>${pw.maintenancePlan}</td><td>${pw.frequency}</td><td>${pw.occursEvery}</td>`;
-                    table.appendChild(row);
-                });
-            });
-            break;
-    }
-    
-    previewContainer.appendChild(table);
-    document.getElementById('copy-button').style.display = 'inline-block';
-    document.getElementById('download-button').style.display = 'inline-block';
-    
-    // Añadir también un botón para alternar entre vista tabla y texto plano
-    if (!document.getElementById('toggle-view-button')) {
-        const toggleButton = document.createElement('button');
-        toggleButton.id = 'toggle-view-button';
-        toggleButton.className = 'action-button';
-        toggleButton.textContent = 'Cambiar a Vista Texto';
-        toggleButton.onclick = function() {
-            togglePreviewView(tipo);
-        };
-        document.getElementById('copy-button').parentNode.insertBefore(
-            toggleButton, 
-            document.getElementById('copy-button').nextSibling
-        );
-    } else {
-        document.getElementById('toggle-view-button').textContent = 'Cambiar a Vista Texto';
-    }
-}
-
-function togglePreviewView(tipo) {
-    const previewContainer = document.getElementById('preview-text');
-    const toggleButton = document.getElementById('toggle-view-button');
-    
-    if (previewContainer.querySelector('table')) {
-        // Cambiar a vista de texto
-        previsualizarDatos(tipo);
-        toggleButton.textContent = 'Cambiar a Vista Tabla';
-    } else {
-        // Cambiar a vista de tabla
-        previsualizarDatosExcel(tipo);
-        toggleButton.textContent = 'Cambiar a Vista Texto';
-    }
-}
-
-
-// Función para cargar masivamente preventivos para equipamientos con planes
+// Función mejorada para cargar masivamente preventivos
 function cargarPreventivosAutomaticos() {
     // Verificar si hay equipamientos y planes disponibles
     if (datos.equipamientos.length === 0 || datos.planes.length === 0) {
@@ -1844,6 +1729,36 @@ function cargarPreventivosAutomaticos() {
         return;
     }
 
+    // Identificar equipos que ya tienen preventivos
+    const equiposConPreventivosExistentes = equiposConPlanes.filter(equipKey => 
+        datos.preventivos.some(prev => prev.asset === equipKey)
+    );
+
+    // Si hay preventivos existentes, preguntar qué hacer
+    if (equiposConPreventivosExistentes.length > 0) {
+        const opcion = confirm(
+            `Se encontraron ${equiposConPreventivosExistentes.length} equipamiento(s) que ya tienen preventivos.\n\n` +
+            `• Presiona "Aceptar" para actualizar los preventivos existentes y crear nuevos para los demás equipos.\n` +
+            `• Presiona "Cancelar" para ignorar los equipos que ya tienen preventivos y solo crear para los nuevos.`
+        );
+        
+        // Si el usuario elige actualizar, mostrar opciones adicionales
+        if (opcion) {
+            const opcionActualizar = confirm(
+                `¿Cómo desea actualizar los preventivos existentes?\n\n` +
+                `• Presiona "Aceptar" para mantener los planes actuales y agregar solo los nuevos planes.\n` +
+                `• Presiona "Cancelar" para reemplazar completamente los preventivos existentes.`
+            );
+            return procesarCargaPreventivos(equiposConPlanes, planesDisponiblesPorEquipo, opcion, opcionActualizar);
+        }
+    }
+    
+    // Si no hay preventivos existentes o el usuario eligió ignorarlos
+    procesarCargaPreventivos(equiposConPlanes, planesDisponiblesPorEquipo, false, false);
+}
+
+// Función auxiliar para procesar la carga de preventivos según las opciones elegidas
+function procesarCargaPreventivos(equiposConPlanes, planesDisponiblesPorEquipo, actualizarExistentes, mantenerPlanes) {
     // Obtener el ID inicial para los nuevos preventivos
     let idInicial = parseInt(document.getElementById('id-inicial').value);
     if (datos.preventivos.length > 0) {
@@ -1851,72 +1766,59 @@ function cargarPreventivosAutomaticos() {
         idInicial = Math.max(idInicial, maxId + 1);
     }
 
-    // Crear preventivos para cada equipo con planes
+    // Estadísticas para mostrar al final
     let preventivosCreados = 0;
-    const equiposIgnorados = [];
-    const preventivosExistentes = [];
+    let preventivosActualizados = 0;
+    let equiposIgnorados = [];
 
+    // Procesar cada equipo
     equiposConPlanes.forEach(equipKey => {
-        // Verificar si ya existe un preventivo para este equipo
-        const existePreventivo = datos.preventivos.some(prev => prev.asset === equipKey);
-        if (existePreventivo) {
-            preventivosExistentes.push(equipKey);
-            return; // Saltar este equipo
-        }
-
         const equipamiento = datos.equipamientos.find(e => e.key === equipKey);
         const planesDelEquipo = planesDisponiblesPorEquipo[equipKey];
+        const preventivoExistente = datos.preventivos.find(prev => prev.asset === equipKey);
         
-        // Si tiene planes, crear un preventivo
-        if (planesDelEquipo.length > 0) {
+        // Si ya existe un preventivo para este equipo
+        if (preventivoExistente) {
+            // Si elegimos no actualizar, ignorar este equipo
+            if (!actualizarExistentes) {
+                equiposIgnorados.push(equipKey);
+                return;
+            }
+            
+            // Actualizar el preventivo existente
+            if (mantenerPlanes) {
+                // Mantener planes actuales y agregar solo los nuevos
+                const planesExistentes = new Set();
+                preventivoExistente.plannedWork.forEach(pw => {
+                    planesExistentes.add(pw.maintenancePlan);
+                });
+                
+                // Agregar solo planes que no estén ya en el preventivo
+                planesDelEquipo.forEach(plan => {
+                    if (!planesExistentes.has(plan.planKey)) {
+                        const nuevoPlannedWork = crearPlannedWork(preventivoExistente.preventiveMaintenanceId, plan);
+                        preventivoExistente.plannedWork.push(nuevoPlannedWork);
+                    }
+                });
+            } else {
+                // Reemplazar completamente los planned work
+                preventivoExistente.plannedWork = planesDelEquipo.map(plan => 
+                    crearPlannedWork(preventivoExistente.preventiveMaintenanceId, plan)
+                );
+            }
+            
+            // Actualizar descripción por si cambió la del equipamiento
+            preventivoExistente.descripcion = `Prev. ${equipamiento.descripcion} (${equipamiento.prefijo})`;
+            preventivosActualizados++;
+            
+        } else {
+            // Crear un nuevo preventivo
             const preventiveMaintenanceId = `PR${idInicial.toString().padStart(7, '0')}`;
             const descripcionPreventivo = `Prev. ${equipamiento.descripcion} (${equipamiento.prefijo})`;
             
-            const plannedWork = planesDelEquipo.map(plan => {
-                // Determinar la frecuencia y ocurrencia basado en la periodicidad del plan
-                let frequency, occursEvery;
-                
-                switch(plan.periodicidad) {
-                    case 'Diario':
-                        frequency = 'Daily';
-                        occursEvery = 1;
-                        break;
-                    case 'Semanal':
-                        frequency = 'Weekly';
-                        occursEvery = 1;
-                        break;
-                    case 'Quincenal':
-                        frequency = 'Weekly';
-                        occursEvery = 2;
-                        break;
-                    case 'Mensual':
-                        frequency = 'Monthly';
-                        occursEvery = 1;
-                        break;
-                    case 'Trimestral':
-                        frequency = 'Monthly';
-                        occursEvery = 3;
-                        break;
-                    case 'Semestral':
-                        frequency = 'Monthly';
-                        occursEvery = 6;
-                        break;
-                    case 'Anual':
-                        frequency = 'Monthly';
-                        occursEvery = 12;
-                        break;
-                    default:
-                        frequency = 'Monthly';
-                        occursEvery = 1;
-                }
-                
-                return {
-                    preventiveMaintenanceId,
-                    maintenancePlan: plan.planKey,
-                    frequency,
-                    occursEvery
-                };
-            });
+            const plannedWork = planesDelEquipo.map(plan => 
+                crearPlannedWork(preventiveMaintenanceId, plan)
+            );
             
             const preventivo = {
                 id: idInicial,
@@ -1929,8 +1831,6 @@ function cargarPreventivosAutomaticos() {
             datos.preventivos.push(preventivo);
             preventivosCreados++;
             idInicial++;
-        } else {
-            equiposIgnorados.push(equipKey);
         }
     });
 
@@ -1939,13 +1839,67 @@ function cargarPreventivosAutomaticos() {
     document.getElementById('id-inicial').value = idInicial;
     guardarDatos();
     
-    // Mostrar resultado
-    let mensaje = `Se han creado ${preventivosCreados} preventivos nuevos.`;
-    if (preventivosExistentes.length > 0) {
-        mensaje += `\n${preventivosExistentes.length} equipamiento(s) ya tenían preventivos y fueron ignorados.`;
-    }
+    // Mostrar resultado con estadísticas detalladas
+    let mensaje = `Resumen de la operación:\n\n`;
+    mensaje += `• Preventivos nuevos creados: ${preventivosCreados}\n`;
+    mensaje += `• Preventivos existentes actualizados: ${preventivosActualizados}\n`;
     if (equiposIgnorados.length > 0) {
-        mensaje += `\n${equiposIgnorados.length} equipamiento(s) no tenían planes configurados y fueron ignorados.`;
+        mensaje += `• Equipamientos ignorados: ${equiposIgnorados.length}\n`;
     }
+    
+    // Detalles adicionales según la operación
+    if (actualizarExistentes && mantenerPlanes) {
+        mensaje += `\nLos preventivos existentes se actualizaron añadiendo solo los nuevos planes.`;
+    } else if (actualizarExistentes) {
+        mensaje += `\nLos preventivos existentes se reemplazaron completamente con nuevos planes.`;
+    }
+    
     alert(mensaje);
+}
+
+// Función auxiliar para crear un planned work basado en un plan
+function crearPlannedWork(preventiveMaintenanceId, plan) {
+    // Determinar la frecuencia y ocurrencia basado en la periodicidad del plan
+    let frequency, occursEvery;
+    
+    switch(plan.periodicidad) {
+        case 'Diario':
+            frequency = 'Daily';
+            occursEvery = 1;
+            break;
+        case 'Semanal':
+            frequency = 'Weekly';
+            occursEvery = 1;
+            break;
+        case 'Quincenal':
+            frequency = 'Weekly';
+            occursEvery = 2;
+            break;
+        case 'Mensual':
+            frequency = 'Monthly';
+            occursEvery = 1;
+            break;
+        case 'Trimestral':
+            frequency = 'Monthly';
+            occursEvery = 3;
+            break;
+        case 'Semestral':
+            frequency = 'Monthly';
+            occursEvery = 6;
+            break;
+        case 'Anual':
+            frequency = 'Monthly';
+            occursEvery = 12;
+            break;
+        default:
+            frequency = 'Monthly';
+            occursEvery = 1;
+    }
+    
+    return {
+        preventiveMaintenanceId,
+        maintenancePlan: plan.planKey,
+        frequency,
+        occursEvery
+    };
 }
