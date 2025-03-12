@@ -887,10 +887,10 @@ function editarPlan(planKey) {
     datos.tareasTemp = JSON.parse(JSON.stringify(plan.tareas)); // Copia profunda de las tareas
     actualizarTablaTareas();
     
-    // Cambiar el texto del botón
-    const btnAgregar = document.querySelector('#planes button.action-button:not(.add-task-btn)');
-    btnAgregar.textContent = 'Actualizar Plan';
-    btnAgregar.onclick = actualizarPlan;
+    // Cambiar el texto del botón de agregar plan (el que está fuera de la carga masiva)
+    const btnAgregarPlan = document.querySelector('#planes > button.action-button');
+    btnAgregarPlan.textContent = 'Actualizar Plan';
+    btnAgregarPlan.onclick = actualizarPlan;
     
     // Añadir botón para cancelar edición
     if (!document.getElementById('cancelar-edicion-plan')) {
@@ -899,7 +899,7 @@ function editarPlan(planKey) {
         btnCancelar.className = 'action-button cancel-button';
         btnCancelar.textContent = 'Cancelar Edición';
         btnCancelar.onclick = cancelarEdicionPlan;
-        btnAgregar.parentNode.insertBefore(btnCancelar, btnAgregar.nextSibling);
+        btnAgregarPlan.parentNode.insertBefore(btnCancelar, btnAgregarPlan.nextSibling);
     }
 }
 
@@ -985,18 +985,17 @@ function cancelarEdicionPlan() {
     datos.tareasTemp = [];
     actualizarTablaTareas();
     
-    // Restaurar el botón a estado original
-    const btnAgregar = document.querySelector('#planes button.action-button:not(.add-task-btn)');
-    if (btnAgregar) {
-        btnAgregar.textContent = 'Agregar Plan';
-        btnAgregar.onclick = agregarPlanMantenimiento;
+    // Restaurar el botón a estado original (el que está fuera de la carga masiva)
+    const btnAgregarPlan = document.querySelector('#planes > button.action-button');
+    if (btnAgregarPlan) {
+        btnAgregarPlan.textContent = 'Agregar Plan';
+        btnAgregarPlan.onclick = agregarPlanMantenimiento;
     }
     
     // Eliminar botón cancelar
     const btnCancelar = document.getElementById('cancelar-edicion-plan');
     if (btnCancelar) btnCancelar.remove();
 }
-
 
 
 
