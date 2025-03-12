@@ -1143,9 +1143,6 @@ function editarTarea(taskKey) {
     }
 }
 
-
-
-
 function procesarCargaMasivaEquipamientos() {
     const texto = document.getElementById('carga-masiva-equipamientos').value.trim();
     if (!texto) {
@@ -1161,15 +1158,16 @@ function procesarCargaMasivaEquipamientos() {
         const linea = lineas[i].trim();
         if (!linea) continue;
         
-        // Intentar extraer prefijo y código
-        const primerEspacio = linea.indexOf(' ');
-        if (primerEspacio === -1) {
-            errores.push(`Línea ${i+1}: Formato incorrecto. No se encontró espacio separador.`);
+        // Dividir la línea por tabulaciones o por espacios si no hay tabulaciones
+        const partes = linea.includes('\t') ? linea.split('\t') : linea.split(/\s+(.+)/);
+        
+        if (partes.length < 2) {
+            errores.push(`Línea ${i+1}: Formato incorrecto. Se esperaba "PrefijoCódigo[tab]Descripción".`);
             continue;
         }
         
-        const prefijoYCodigo = linea.substring(0, primerEspacio).trim();
-        const descripcionCompleta = linea.substring(primerEspacio + 1).trim();
+        const prefijoYCodigo = partes[0].trim();
+        const descripcionCompleta = partes[1].trim();
         
         // Validar que tengamos un guion para separar prefijo y código
         const partesPC = prefijoYCodigo.split('-');
@@ -1222,6 +1220,117 @@ function procesarCargaMasivaEquipamientos() {
         }
     } else {
         alert(`No se pudo agregar ningún equipamiento.\nErrores encontrados:\n${errores.join('\n')}`);
+    }
+}
+
+function procesarCargaMasivaTareas() {
+    const texto = document.getElementById('carga-masiva-tareas').value.trim();
+    if (!texto) {
+        alert('Por favor, ingrese datos para la carga masiva.');
+        return;
+    }
+    
+    const lineas = texto.split('\n');
+    let tareasAgregadas = 0;
+    let errores = [];
+    
+    for (let i = 0; i < lineas.length; i++) {
+        const linea = lineas[i].trim();
+        if (!linea) continue;
+        
+        // Verificar si la línea contiene tabulaciones
+        if (linea.includes('\t')) {
+            // Procesar con tabulaciones
+            const partes = linea.split('\t');
+            
+            if (partes.length < 3) {
+                errores.push(`Línea ${i+1}: Formato incorrecto. Se esperaban al menos 3 columnas separadas por tabulaciones.`);
+                continue;
+            }
+            
+            const taskKey = partes[0].trim();
+            const descripcion = partes[1].trim();
+            const duracion = partes[2].trim();
+            
+            // Validaciones
+            if (!taskKey || !descripcion || !duracion) {
+                errores.push(`Línea ${i+1}: Falta información (clave, descripción o duración).`);
+                continue;
+            }
+            
+            // Validar duración
+            if (!validateDuration(duracion)) {
+                errores.push(`Línea ${i+1}: Formato de duración incorrecto. Debe ser H:MM:SS.`);
+                continue;
+            }
+            
+            // Verificar si ya existe una tarea con la misma clave
+            if (datos.tareasTemp.some(t => t.taskKey === taskKey)) {
+                errores.push(`Línea ${i+1}: Ya existe una tarea con la clave ${taskKey}.`);
+                continue;
+            }
+            
+            // Crear y agregar la tarea
+            const tarea = {
+                taskKey,
+                descripcion: truncateText(descripcion, 100),
+                duracion
+            };
+            
+            datos.tareasTemp.push(tarea);
+            tareasAgregadas++;
+        } else {
+            // Intentar procesar con espacios (menos confiable)
+            const match = linea.match(/^(\S+)\s+(.+?)?\s+(\d+:[0-5]\d:[0-5]\d)$/);
+            
+            if (!match) {
+                errores.push(`Línea ${i+1}: Formato incorrecto. Use formato "TaskKey[tab]Descripción[tab]H:MM:SS" o copia directamente desde Excel.`);
+                continue;
+            }
+            
+            const [, taskKey, descripcion, duracion] = match;
+            
+            // Validaciones
+            if (!taskKey || !descripcion || !duracion) {
+                errores.push(`Línea ${i+1}: Falta información (clave, descripción o duración).`);
+                continue;
+            }
+            
+            // Validar duración
+            if (!validateDuration(duracion)) {
+                errores.push(`Línea ${i+1}: Formato de duración incorrecto. Debe ser H:MM:SS.`);
+                continue;
+            }
+            
+            // Verificar si ya existe una tarea con la misma clave
+            if (datos.tareasTemp.some(t => t.taskKey === taskKey)) {
+                errores.push(`Línea ${i+1}: Ya existe una tarea con la clave ${taskKey}.`);
+                continue;
+            }
+            
+            // Crear y agregar la tarea
+            const tarea = {
+                taskKey,
+                descripcion: truncateText(descripcion, 100),
+                duracion
+            };
+            
+            datos.tareasTemp.push(tarea);
+            tareasAgregadas++;
+        }
+    }
+    
+    if (tareasAgregadas > 0) {
+        actualizarTablaTareas();
+        document.getElementById('carga-masiva-tareas').value = '';
+        
+        if (errores.length === 0) {
+            alert(`Se agregaron ${tareasAgregadas} tareas correctamente.`);
+        } else {
+            alert(`Se agregaron ${tareasAgregadas} tareas.\nSe encontraron ${errores.length} errores:\n${errores.join('\n')}`);
+        }
+    } else {
+        alert(`No se pudo agregar ninguna tarea.\nErrores encontrados:\n${errores.join('\n')}`);
     }
 }
 
