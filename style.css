@@ -394,12 +394,13 @@ td .edit-button, td .delete-button {
     padding: 0px 0px 15px 0px;
 }
 
-/* Estilo para filas relacionadas con el equipamiento seleccionado */
+
 .fila-relacionada {
-    background-color: rgba(144, 238, 144, 0.3); /* Verde claro semi-transparente */
+    background-color: rgba(144, 238, 144, 0.5) !important; /* Verde más intenso y prioridad importante */
     transition: background-color 0.3s;
+    border-left: 3px solid #2e8b57; /* Borde izquierdo verde oscuro para mayor visualización */
 }
 
 .fila-relacionada:hover {
-    background-color: rgba(144, 238, 144, 0.5); /* Un poco más intenso al pasar el mouse */
+    background-color: rgba(144, 238, 144, 0.7) !important; /* Aún más intenso al pasar el mouse */
 }
