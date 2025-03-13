@@ -336,9 +336,23 @@ function actualizarSelectorEquipamientos(selectorId) {
     selector.innerHTML = '<option value="">-- Seleccionar equipamiento --</option>';
     
     datos.equipamientos.forEach(equipamiento => {
+        // Verificar si el equipamiento tiene un plan de mantenimiento
+        const tienePlan = datos.planes.some(plan => plan.equipamientoKey === equipamiento.key);
+        
+        // Verificar si el equipamiento tiene un preventivo
+        const tienePreventivo = datos.preventivos.some(prev => prev.asset === equipamiento.key);
+        
+        // Crear el indicador apropiado según el tipo de selector
+        let indicador = '';
+        if (selectorId === 'equipamiento-plan') {
+            indicador = tienePlan ? ' ✅' : ' ❌';
+        } else if (selectorId === 'equipamiento-preventivo') {
+            indicador = tienePreventivo ? ' ✅' : ' ❌';
+        }
+        
         const option = document.createElement('option');
         option.value = equipamiento.key;
-        option.textContent = `${equipamiento.key} - ${equipamiento.descripcion}`;
+        option.textContent = `${equipamiento.key} - ${equipamiento.descripcion}${indicador}`;
         selector.appendChild(option);
     });
 }
@@ -573,9 +587,17 @@ function actualizarSelectorPlanes() {
     const planesFiltrados = datos.planes.filter(p => p.equipamientoKey === equipamientoKey);
     
     planesFiltrados.forEach(plan => {
+        // Verificar si el plan tiene un preventivo asociado a este equipamiento
+        const tienePreventivo = datos.preventivos.some(prev => 
+            prev.asset === equipamientoKey && 
+            prev.plannedWork.some(pw => pw.maintenancePlan === plan.planKey)
+        );
+        
+        const indicador = tienePreventivo ? ' ✅' : ' ❌';
+        
         const option = document.createElement('option');
         option.value = plan.planKey;
-        option.textContent = `${plan.planKey} - ${plan.descripcion}`;
+        option.textContent = `${plan.planKey} - ${plan.descripcion}${indicador}`;
         selector.appendChild(option);
     });
 }
@@ -1853,15 +1875,6 @@ function crearPlannedWork(preventiveMaintenanceId, plan) {
         occursEvery
     };
 }
-
-
-
-
-
-
-
-
-
 
 
 function previsualizarDatos(tipo) {
