@@ -393,3 +393,13 @@ td .edit-button, td .delete-button {
     color: gray;
     padding: 0px 0px 15px 0px;
 }
+
+/* Estilo para filas relacionadas con el equipamiento seleccionado */
+.fila-relacionada {
+    background-color: rgba(144, 238, 144, 0.3); /* Verde claro semi-transparente */
+    transition: background-color 0.3s;
+}
+
+.fila-relacionada:hover {
+    background-color: rgba(144, 238, 144, 0.5); /* Un poco más intenso al pasar el mouse */
+}

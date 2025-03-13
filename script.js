@@ -116,13 +116,15 @@ function openTab(tabName) {
     document.getElementById(tabName).classList.add('active');
     document.querySelector(`.tab-button[onclick="openTab('${tabName}')"]`).classList.add('active');
     
-    // Actualizar selectores cuando se cambia de pestaña
-    if (tabName === 'planes') {
+     // Actualizar selectores cuando se cambia de pestaña
+     if (tabName === 'planes') {
         actualizarSelectorEquipamientos('equipamiento-plan');
-        actualizarContextoActual(); // Añadir esta línea
+        actualizarContextoActual();
+        destacarPlanesRelacionados(); // Añadir esta línea
     } else if (tabName === 'preventivos') {
         actualizarSelectorEquipamientos('equipamiento-preventivo');
         actualizarSelectorPlanes();
+        destacarPreventivosRelacionados(); // Añadir esta línea
     }
 }
 
@@ -628,6 +630,7 @@ function actualizarTablaPlanes() {
         
         tbody.appendChild(tr);
     });
+    destacarPlanesRelacionados();
 }
 
 function actualizarSelectorPlanes() {
@@ -740,6 +743,7 @@ function actualizarFrecuencias() {
 document.getElementById('equipamiento-preventivo').addEventListener('change', function() {
     actualizarSelectorPlanes();
     actualizarFrecuencias();
+    destacarPreventivosRelacionados();
 });
 
 document.getElementById('planes-preventivo').addEventListener('change', function() {
@@ -877,6 +881,7 @@ function actualizarTablaPreventivos() {
         
         tbody.appendChild(tr);
     });
+    destacarPreventivosRelacionados();
 }
 
 
@@ -1746,10 +1751,6 @@ function actualizarContextoActual() {
 
 
 
-// Añadir el evento al selector de equipamiento
-document.getElementById('equipamiento-plan').addEventListener('change', actualizarContextoActual);
-
-
 
 
 // Función mejorada para cargar masivamente preventivos
@@ -2197,5 +2198,58 @@ function togglePreviewView(tipo) {
         // Cambiar a vista de tabla
         previsualizarDatosExcel(tipo);
         toggleButton.textContent = 'Cambiar a Vista Texto';
+    }
+}
+
+// Agrega este event listener al final del script
+document.getElementById('equipamiento-plan').addEventListener('change', function() {
+    actualizarContextoActual();
+    destacarPlanesRelacionados();
+});
+
+// Agregar esta nueva función
+function destacarPlanesRelacionados() {
+    const equipamientoKey = document.getElementById('equipamiento-plan').value;
+    
+    // Quitar la clase de todas las filas de planes
+    const filas = document.querySelectorAll('#planes-body tr');
+    filas.forEach(fila => {
+        fila.classList.remove('fila-relacionada');
+    });
+    
+    if (equipamientoKey) {
+        // Resaltar las filas de los planes relacionados con este equipamiento
+        filas.forEach(fila => {
+            // La primera celda (índice 0) contiene el planKey
+            const planKey = fila.cells[0].textContent;
+            const plan = datos.planes.find(p => p.planKey === planKey);
+            
+            if (plan && plan.equipamientoKey === equipamientoKey) {
+                fila.classList.add('fila-relacionada');
+            }
+        });
+    }
+}
+
+// Agregar esta nueva función
+function destacarPreventivosRelacionados() {
+    const equipamientoKey = document.getElementById('equipamiento-preventivo').value;
+    
+    // Quitar la clase de todas las filas de preventivos
+    const filas = document.querySelectorAll('#preventivos-body tr');
+    filas.forEach(fila => {
+        fila.classList.remove('fila-relacionada');
+    });
+    
+    if (equipamientoKey) {
+        // Resaltar las filas de los preventivos relacionados con este equipamiento
+        filas.forEach(fila => {
+            // La tercera celda (índice 2) contiene el asset (equipamientoKey)
+            const asset = fila.cells[2].textContent;
+            
+            if (asset === equipamientoKey) {
+                fila.classList.add('fila-relacionada');
+            }
+        });
     }
 }
