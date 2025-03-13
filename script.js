@@ -112,6 +112,18 @@ function openTab(tabName) {
         actualizarSelectorEquipamientos('equipamiento-preventivo');
         actualizarSelectorPlanes();
     }
+
+    document.getElementById(tabName).classList.add('active');
+    document.querySelector(`.tab-button[onclick="openTab('${tabName}')"]`).classList.add('active');
+    
+    // Actualizar selectores cuando se cambia de pestaña
+    if (tabName === 'planes') {
+        actualizarSelectorEquipamientos('equipamiento-plan');
+        actualizarContextoActual(); // Añadir esta línea
+    } else if (tabName === 'preventivos') {
+        actualizarSelectorEquipamientos('equipamiento-preventivo');
+        actualizarSelectorPlanes();
+    }
 }
 
 
@@ -549,6 +561,7 @@ function agregarPlanMantenimiento() {
     
     datos.planes.push(plan);
     actualizarTablaPlanes();
+    actualizarContextoActual();
     
     // Limpiar formulario
     document.getElementById('plan-key').value = '';
@@ -572,6 +585,7 @@ function eliminarPlan(planKey) {
     datos.planes = datos.planes.filter(p => p.planKey !== planKey);
     actualizarTablaPlanes();
     actualizarSelectorPlanes();
+    actualizarContextoActual();
     guardarDatos();
 }
 
@@ -1133,6 +1147,7 @@ function actualizarPlan() {
         
         actualizarTablaPlanes();
         actualizarSelectorPlanes();
+        actualizarContextoActual(); 
         cancelarEdicionPlan();
     }
     guardarDatos();
@@ -1687,26 +1702,47 @@ function actualizarContextoActual() {
         const equipamiento = datos.equipamientos.find(e => e.key === equipamientoKey);
         if (equipamiento) {
             equipamientoDisplay.textContent = `${equipamiento.key} - ${equipamiento.descripcion}`;
+            
+            // Buscar si el equipamiento ya tiene un plan asociado
+            const planesAsociados = datos.planes.filter(p => p.equipamientoKey === equipamientoKey);
+            
+            if (planesAsociados.length > 0) {
+                // Si tiene planes, mostrarlos en verde
+                planDisplay.innerHTML = '';
+                
+                const planActualLabel = document.createElement('span');
+                planActualLabel.textContent = "Plan(es) actual(es): ";
+                planDisplay.appendChild(planActualLabel);
+                
+                const planList = document.createElement('span');
+                planList.style.color = '#006400'; // Verde oscuro
+                planList.style.fontWeight = 'bold';
+                
+                // Mostrar todos los planes asociados
+                planList.textContent = planesAsociados.map(p => p.planKey).join(", ");
+                planDisplay.appendChild(planList);
+            } else {
+                // Si no tiene planes
+                planDisplay.textContent = "Sin plan de mantenimiento asociado";
+            }
         } else {
             equipamientoDisplay.textContent = "No seleccionado";
         }
     } else {
         equipamientoDisplay.textContent = "No seleccionado";
+        planDisplay.textContent = "Sin plan de mantenimiento asociado";
     }
     
     if (modoEdicionPlan) {
-        planDisplay.textContent = modoEdicionPlan;
         modoIndicator.textContent = "Modo: Edición";
         modoIndicator.className = "mode-indicator editing-mode";
         document.querySelector('.task-table-container').classList.add('editing-tasks-container');
     } else {
-        planDisplay.textContent = "Nuevo plan";
         modoIndicator.textContent = "Modo: Creación";
         modoIndicator.className = "mode-indicator creation-mode";
         document.querySelector('.task-table-container').classList.remove('editing-tasks-container');
     }
 }
-
 
 
 
