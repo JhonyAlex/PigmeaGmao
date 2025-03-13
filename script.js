@@ -307,6 +307,19 @@ function actualizarTablaEquipamientos() {
         const tdDesc = document.createElement('td');
         tdDesc.textContent = equipamiento.descripcion;
         
+        // Nueva columna de estado
+        const tdEstado = document.createElement('td');
+        
+        // Verificar si tiene plan de mantenimiento
+        const tienePlan = datos.planes.some(plan => plan.equipamientoKey === equipamiento.key);
+        
+        // Verificar si tiene preventivo
+        const tienePreventivo = datos.preventivos.some(prev => prev.asset === equipamiento.key);
+        
+        // Establecer el estado según los indicadores
+        tdEstado.textContent = `${tienePlan ? '✅' : '❌'} | ${tienePreventivo ? '✅' : '❌'}`;
+        tdEstado.className = 'estado-equipamiento';
+        
         const tdActions = document.createElement('td');
         
         // Botón de edición
@@ -325,6 +338,7 @@ function actualizarTablaEquipamientos() {
         
         tr.appendChild(tdKey);
         tr.appendChild(tdDesc);
+        tr.appendChild(tdEstado); // Agregar la columna de estado
         tr.appendChild(tdActions);
         
         tbody.appendChild(tr);
@@ -353,6 +367,33 @@ function actualizarSelectorEquipamientos(selectorId) {
         const option = document.createElement('option');
         option.value = equipamiento.key;
         option.textContent = `${equipamiento.key} - ${equipamiento.descripcion}${indicador}`;
+        selector.appendChild(option);
+    });
+}
+
+function actualizarSelectorPlanes() {
+    const selector = document.getElementById('planes-preventivo');
+    selector.innerHTML = '';
+    
+    // Obtener el equipamiento seleccionado
+    const equipamientoKey = document.getElementById('equipamiento-preventivo').value;
+    if (!equipamientoKey) return;
+    
+    // Filtrar planes por el equipamiento seleccionado
+    const planesFiltrados = datos.planes.filter(p => p.equipamientoKey === equipamientoKey);
+    
+    planesFiltrados.forEach(plan => {
+        // Verificar si el plan tiene un preventivo asociado a este equipamiento
+        const tienePreventivo = datos.preventivos.some(prev => 
+            prev.asset === equipamientoKey && 
+            prev.plannedWork.some(pw => pw.maintenancePlan === plan.planKey)
+        );
+        
+        const indicador = tienePreventivo ? ' ✅' : ' ❌';
+        
+        const option = document.createElement('option');
+        option.value = plan.planKey;
+        option.textContent = `${plan.planKey} - ${plan.descripcion}${indicador}`;
         selector.appendChild(option);
     });
 }
@@ -766,6 +807,10 @@ function agregarPreventivo() {
     // Actualizar el valor de ID inicial para el próximo preventivo
     document.getElementById('id-inicial').value = idPreventivo + 1;
     guardarDatos();
+    // Actualizar selectores con los nuevos indicadores
+actualizarSelectorEquipamientos('equipamiento-plan');
+actualizarSelectorEquipamientos('equipamiento-preventivo');
+actualizarTablaEquipamientos();
 }
 
 function eliminarPreventivo(id) {
@@ -1673,6 +1718,17 @@ document.getElementById('equipamiento-plan').addEventListener('change', actualiz
 
 // Función mejorada para cargar masivamente preventivos
 function cargarPreventivosAutomaticos() {
+
+    const idInicialInput = document.getElementById('id-inicial');
+    if (!idInicialInput.value.trim()) {
+        alert('Por favor, ingrese un ID inicial antes de generar preventivos.');
+        idInicialInput.focus();
+        return;
+    }
+
+
+
+
     // Verificar si hay equipamientos y planes disponibles
     if (datos.equipamientos.length === 0 || datos.planes.length === 0) {
         alert('No hay equipamientos o planes disponibles para crear preventivos.');
@@ -1810,6 +1866,11 @@ function procesarCargaPreventivos(equiposConPlanes, planesDisponiblesPorEquipo, 
     actualizarTablaPreventivos();
     document.getElementById('id-inicial').value = idInicial;
     guardarDatos();
+
+    // Actualizar selectores con los nuevos indicadores
+actualizarSelectorEquipamientos('equipamiento-plan');
+actualizarSelectorEquipamientos('equipamiento-preventivo');
+actualizarTablaEquipamientos();
     
     // Mostrar resultado con estadísticas detalladas
     let mensaje = `Resumen de la operación:\n\n`;
