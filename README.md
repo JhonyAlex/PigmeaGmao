@@ -1,119 +1,128 @@
-# Generador de Datos GMAO
+# PigmeaGmao - Generador de Datos GMAO
 
-Este proyecto es una aplicación web que permite generar datos estructurados para sistemas de Gestión de Mantenimiento Asistido por Ordenador (GMAO). La aplicación funciona completamente en el lado del cliente (offline) utilizando HTML, CSS y JavaScript.
+![PigmeaGmao Logo](https://raw.githubusercontent.com/JhonyAlex/PigmeaGmao/main/assets/logo.png)
 
-## Descripción
+## 📋 Descripción
 
-Esta herramienta le permite crear y gestionar:
+PigmeaGmao es una herramienta web especializada para crear y gestionar equipamientos, planes de mantenimiento y preventivos para su fácil importación al sistema Value Keep GMAO. Esta aplicación facilita la generación de datos estructurados para sistemas de Gestión de Mantenimiento Asistido por Ordenador (GMAO).
 
-- **Equipamientos/Piezas**: Define elementos con un código único (Key) y descripción.
-- **Planes de Mantenimiento**: Asociados a equipamientos, con periodicidad y tareas.
-- **Tareas**: Actividades específicas con identificador, descripción y duración.
-- **Preventivos**: Agrupaciones que conectan equipamientos con planes de mantenimiento.
-- **Planned Work**: Define la frecuencia de ejecución de los planes en los preventivos.
+## 🌟 Características principales
 
-Los datos generados se pueden exportar en formato CSV para ser importados fácilmente a Excel u otros sistemas GMAO.
+- **Gestión de Equipamientos**: Crear, editar y eliminar equipos con códigos personalizados.
+- **Planes de Mantenimiento**: Configurar planes con tareas específicas para cada equipamiento.
+- **Preventivos**: Generar preventivos con diferentes frecuencias (diaria, semanal, mensual, etc.).
+- **Exportación de Datos**: Generar archivos CSV listos para importar en Value Keep GMAO.
+- **Guardado Local**: Almacenamiento local de datos para recuperación entre sesiones.
+- **Carga Masiva**: Importación por lotes de equipamientos y tareas.
+- **Interfaz Intuitiva**: Sistema de pestañas y formularios fáciles de usar.
 
-## Características
+## 💻 Tecnologías utilizadas
 
-- Interfaz de usuario intuitiva con pestañas para organizar el flujo de trabajo
-- Validación de datos para evitar errores comunes
-- Vista previa de los datos antes de exportarlos
-- Exportación a CSV para facilitar la importación a Excel
-- Funciona completamente offline (no requiere conexión a Internet)
-- No requiere instalación de dependencias o servidores
+- HTML5
+- CSS3
+- JavaScript (Vanilla)
+- LocalStorage para persistencia de datos
 
-## Uso
+## 🚀 Cómo utilizar
 
-1. **Equipamientos**:
-   - Ingrese el prefijo (ej: "PIG")
-   - Ingrese el código (ej: "WM3-DES")
-   - Ingrese una descripción (máximo 100 caracteres)
-   - Haga clic en "Agregar Equipamiento"
+### 1️⃣ Pestaña de Equipamientos
 
-2. **Planes de Mantenimiento**:
-   - Seleccione un equipamiento existente
-   - Ingrese una clave para el plan (ej: "PLAN001")
-   - Seleccione una periodicidad (Diario, Semanal, etc.)
-   - Ingrese las tareas en formato tabulado (TaskKey, Descripción, Duración)
-   - Haga clic en "Agregar Plan"
-
-3. **Preventivos**:
-   - Defina el ID inicial para la secuencia de preventivos
-   - Seleccione un equipamiento
-   - Seleccione uno o más planes de mantenimiento
-   - Configure la frecuencia para cada plan seleccionado
-   - Haga clic en "Agregar Preventivo"
-
-4. **Exportar**:
-   - Seleccione el tipo de datos que desea exportar
-   - Previsualice los datos
-   - Copie al portapapeles o descargue como archivo CSV
-
-## Estructura de Archivos
-
-- `index.html`: Estructura de la aplicación y formularios
-- `styles.css`: Estilos de la interfaz de usuario
-- `script.js`: Lógica de la aplicación y manipulación de datos
-
-## Formato de Datos
-
-La aplicación genera los siguientes tipos de registros CSV:
-
-1. **Equipamientos**:
+1. Ingrese los datos del equipamiento (Prefijo, Código, Descripción)
+2. Haga clic en "Agregar Equipamiento"
+3. También puede realizar una carga masiva pegando datos en formato:
    ```
-   Key,Descripcion
-   "PIG-WM3-DES","Desbobinador IMPRESORA WM3"
+   Prefijo-Código Descripción
    ```
 
-2. **Planes**:
-   ```
-   MaintenancePlanKey,Descripcion
-   "PLAN001","Desbobinador IMPRESORA WM3 - Semestral"
-   ```
+### 2️⃣ Pestaña de Planes de Mantenimiento
 
-3. **Tareas**:
-   ```
-   MaintenancePlanKey,TaskKey,Descripcion,Duracion
-   "PLAN001","T001","Verificar niveles de aceite","0:30:00"
-   "PLAN001","T002","Inspeccionar correas","0:15:00"
-   ```
+1. Seleccione un equipamiento de la lista desplegable
+2. Defina la clave del plan y su periodicidad
+3. Agregue tareas específicas con sus duraciones en formato H:MM:SS
+4. Las tareas pueden agregarse individualmente o mediante carga masiva
+5. Haga clic en "Agregar Plan" para finalizar
 
-4. **Preventivos**:
-   ```
-   PreventiveMaintenanceId,Descripcion,Asset
-   "PR00000100","Prev. Desbobinador IMPRESORA WM3 (PIG)","PIG-WM3-DES"
-   ```
+### 3️⃣ Pestaña de Preventivos
 
-5. **Planned Work**:
-   ```
-   PreventiveMaintenanceId,MaintenancePlan,Frequency,OccursEvery
-   "PR00000100","PLAN001","Monthly","6"
-   ```
+1. Configure un ID inicial para los preventivos
+2. Seleccione un equipamiento
+3. Elija los planes de mantenimiento a incluir (puede seleccionar varios)
+4. Configure las frecuencias para cada plan
+5. Haga clic en "Agregar Preventivo"
+6. También puede usar "Generar Preventivos para Todos los Equipos" para automatizar el proceso
 
-## Limitaciones
+### 4️⃣ Pestaña de Exportación
 
-- Los datos se mantienen en memoria y se pierden al recargar la página
-- No hay funcionalidad para guardar o cargar configuraciones
-- No hay conexión con bases de datos externas
-- Diseñado solo para uso en navegadores modernos
+1. Seleccione el tipo de datos a exportar:
+   - Equipamientos
+   - Planes
+   - Tareas
+   - Preventivos
+   - Planned Work
+2. Previsualice los datos en formato tabla o texto
+3. Copie al portapapeles o descargue como CSV
+4. También puede exportar todos los datos como un archivo JSON de respaldo
 
-## Requisitos Técnicos
+## 🔄 Flujo de trabajo recomendado
 
-- Navegador web moderno con soporte para JavaScript ES6
-- No requiere instalación ni conexión a internet
+1. Cree primero todos los equipamientos necesarios
+2. Configure planes de mantenimiento para cada equipamiento
+3. Genere preventivos basados en los planes creados
+4. Exporte los datos para su importación en Value Keep GMAO
 
-## Cómo Iniciar
+## 📋 Formato de datos
 
-1. Descargue los tres archivos (`index.html`, `styles.css` y `script.js`)
-2. Colóquelos en la misma carpeta
-3. Abra el archivo `index.html` en su navegador web
+### Equipamientos
 
-## Licencia
+- **Key**: Identificador único (Prefijo-Código)
+- **Descripción**: Descripción del equipamiento (máx. 100 caracteres)
 
-Este proyecto es de libre uso y modificación.
+### Planes de Mantenimiento
+
+- **PlanKey**: Identificador único del plan
+- **Descripción**: Generada automáticamente basada en el equipamiento y periodicidad
+- **Tareas**: Lista de tareas asociadas al plan
+
+### Tareas
+
+- **TaskKey**: Identificador único de la tarea
+- **Descripción**: Descripción de la tarea a realizar
+- **Duración**: Tiempo estimado en formato H:MM:SS
+
+### Preventivos
+
+- **PreventiveMaintenanceId**: ID automático con formato PR0000000
+- **Descripción**: Generada automáticamente basada en el equipamiento
+- **Asset**: Key del equipamiento asociado
+- **PlannedWork**: Configuración de frecuencias para cada plan incluido
+
+## 💾 Persistencia de datos
+
+La aplicación almacena todos los datos en el localStorage del navegador. Puede:
+
+- Exportar los datos como un archivo JSON para respaldo
+- Importar datos previamente exportados
+- Borrar todos los datos almacenados si es necesario
+
+## ⚙️ Configuraciones avanzadas
+
+- **Ordenamiento de tablas**: Haga clic en los encabezados para ordenar los datos
+- **Relaciones visuales**: Al seleccionar un equipamiento, se resaltan automáticamente sus planes y preventivos relacionados
+- **Indicadores de estado**: Las tablas muestran indicadores para identificar rápidamente equipos con planes o preventivos
+
+## 📄 Licencia
+
+Este proyecto es de código abierto y está disponible para su uso bajo la licencia MIT.
+
+## 🔗 Enlaces útiles
+
+- [Repositorio en GitHub](https://github.com/JhonyAlex/PigmeaGmao)
+- [Página del desarrollador](https://github.com/JhonyAlex)
+
+## 👨‍💻 Autor
+
+- JhonyAlex
 
 ---
 
-Desarrollado como herramienta de ayuda para la generación de datos GMAO.
-Fecha: 2025-03-11
+Desarrollado con ❤️ para facilitar la gestión de mantenimiento
