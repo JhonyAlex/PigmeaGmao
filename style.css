@@ -404,3 +404,7 @@ td .edit-button, td .delete-button {
 .fila-relacionada:hover {
     background-color: rgba(144, 238, 144, 0.7) !important; /* Aún más intenso al pasar el mouse */
 }
+
+button.action-button.warning-button {
+    background-color: darkred;
+}
