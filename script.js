@@ -2033,7 +2033,9 @@ function previsualizarDatos(tipo) {
                 datos.preventivos.forEach(p => {
                     if (p.plannedWork) {
                         p.plannedWork.forEach(pw => {
-                            csv += `${escapeCSV(pw.preventiveMaintenanceId)},${escapeCSV(pw.maintenancePlan)},${escapeCSV(pw.frequency)},${escapeCSV(pw.occursEvery)}\n`;
+                            // Modificado: Extraer solo el número del ID eliminando el prefijo 'PR'
+                            const idNumerico = pw.preventiveMaintenanceId.replace(/^PR0*/, '');
+                            csv += `${escapeCSV(idNumerico)},${escapeCSV(pw.maintenancePlan)},${escapeCSV(pw.frequency)},${escapeCSV(pw.occursEvery)}\n`;
                         });
                     }
                 });
@@ -2147,7 +2149,9 @@ function previsualizarDatosExcel(tipo) {
                 if (p.plannedWork) {
                     p.plannedWork.forEach(pw => {
                         let row = document.createElement('tr');
-                        row.innerHTML = `<td>${pw.preventiveMaintenanceId}</td><td>${pw.maintenancePlan}</td><td>${pw.frequency}</td><td>${pw.occursEvery}</td>`;
+                        // Modificado: Extraer solo el número del ID eliminando el prefijo 'PR'
+                        const idNumerico = pw.preventiveMaintenanceId.replace(/^PR0*/, '');
+                        row.innerHTML = `<td>${idNumerico}</td><td>${pw.maintenancePlan}</td><td>${pw.frequency}</td><td>${pw.occursEvery}</td>`;
                         table.appendChild(row);
                     });
                 }
@@ -2182,7 +2186,6 @@ function previsualizarDatosExcel(tipo) {
     toggleButton.style.display = hasData ? 'inline-block' : 'none';
     toggleButton.onclick = () => togglePreviewView(tipo);
 }
-
 
 
 
