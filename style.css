@@ -381,3 +381,9 @@ td .edit-button, td .delete-button {
 #preview-text {
     overflow-x: auto;
 }
+
+#exportar p {
+    font-size: small;
+    color: gray;
+    padding: 0px 0px 15px 0px;
+}
