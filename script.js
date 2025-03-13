@@ -33,8 +33,14 @@ function cargarDatos() {
 }
 
 // Iniciar carga de datos cuando la página esté lista
-document.addEventListener('DOMContentLoaded', cargarDatos);
-
+// Modificar el listener DOMContentLoaded existente (línea 36)
+document.addEventListener('DOMContentLoaded', function() {
+    cargarDatos();
+    
+    // Inicializar tablas ordenables
+    hacerTablaOrdenable('tabla-planes', [0, 1]);
+    hacerTablaOrdenable('tabla-preventivos', [0, 1, 2]);
+});
 
 
 
@@ -631,6 +637,9 @@ function actualizarTablaPlanes() {
         tbody.appendChild(tr);
     });
     destacarPlanesRelacionados();
+    
+    // Hacer la tabla ordenable (solo después de llenar datos)
+    hacerTablaOrdenable('tabla-planes', [0, 1]); // Permitir ordenar por ID y descripción
 }
 
 function actualizarSelectorPlanes() {
@@ -882,6 +891,9 @@ function actualizarTablaPreventivos() {
         tbody.appendChild(tr);
     });
     destacarPreventivosRelacionados();
+    
+    // Hacer la tabla ordenable (solo después de llenar datos)
+    hacerTablaOrdenable('tabla-preventivos', [0, 1, 2]); // Permitir ordenar por ID, descripción y asset
 }
 
 
@@ -2255,4 +2267,89 @@ function destacarPreventivosRelacionados() {
             }
         });
     }
+}
+
+// Función para hacer tablas ordenables
+function hacerTablaOrdenable(tablaId, columnasPredefinidas = []) {
+    const tabla = document.getElementById(tablaId);
+    if (!tabla) return;
+    
+    const thead = tabla.querySelector('thead');
+    if (!thead) return;
+    
+    const headers = thead.querySelectorAll('th');
+    
+    // Marcar columnas como ordenables y agregar event listeners
+    headers.forEach((th, index) => {
+        // Verificar si esta columna debe ser ordenable
+        const columnaOrdenable = columnasPredefinidas.length === 0 || columnasPredefinidas.includes(index);
+        
+        if (columnaOrdenable && th.textContent.trim() !== 'Acciones') {
+            th.classList.add('sortable');
+            th.addEventListener('click', () => ordenarTabla(tabla, index, th));
+        }
+    });
+}
+
+// Función para ordenar tabla
+function ordenarTabla(tabla, columnaIndex, headerElement) {
+    const tbody = tabla.querySelector('tbody');
+    const filas = Array.from(tbody.querySelectorAll('tr'));
+    
+    // Determinar la dirección de ordenamiento
+    const isAsc = !headerElement.classList.contains('asc');
+    
+    // Actualizar clases en todos los encabezados
+    tabla.querySelectorAll('th.sortable').forEach(th => {
+        th.classList.remove('asc', 'desc');
+    });
+    
+    // Establecer clase en el encabezado actual
+    headerElement.classList.add(isAsc ? 'asc' : 'desc');
+    
+    // Función para comparar valores (detecta automáticamente si son números o texto)
+    const compararValores = (a, b) => {
+        const valorA = a.cells[columnaIndex].textContent.trim();
+        const valorB = b.cells[columnaIndex].textContent.trim();
+        
+        // Detectar si los valores son numéricos (incluso si tienen prefijos)
+        const numA = extraerNumero(valorA);
+        const numB = extraerNumero(valorB);
+        
+        // Si ambos son números, comparar numéricamente
+        if (!isNaN(numA) && !isNaN(numB)) {
+            return isAsc ? numA - numB : numB - numA;
+        }
+        
+        // Comparación alfabética para texto
+        return isAsc 
+            ? valorA.localeCompare(valorB, 'es', { sensitivity: 'base' }) 
+            : valorB.localeCompare(valorA, 'es', { sensitivity: 'base' });
+    };
+    
+    // Ordenar filas
+    const filasOrdenadas = filas.sort(compararValores);
+    
+    // Redibujar tabla con filas ordenadas
+    tbody.innerHTML = '';
+    filasOrdenadas.forEach(fila => tbody.appendChild(fila));
+    
+    // Si hay filas destacadas, restaurarlas
+    if (tabla.id === 'tabla-planes') {
+        destacarPlanesRelacionados();
+    } else if (tabla.id === 'tabla-preventivos') {
+        destacarPreventivosRelacionados();
+    }
+}
+
+// Función auxiliar para extraer números de textos como "PR0000123" o "Plan-45"
+function extraerNumero(texto) {
+    // Buscar secuencias de dígitos en el texto
+    const matches = texto.match(/\d+/g);
+    if (matches && matches.length > 0) {
+        // Si hay varios grupos de números, usar el más largo
+        const numStr = matches.reduce((a, b) => a.length >= b.length ? a : b);
+        return parseInt(numStr, 10);
+    }
+    return NaN; // No es un número
 }
