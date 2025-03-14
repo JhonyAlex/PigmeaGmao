@@ -13,12 +13,22 @@ function guardarDatos() {
     localStorage.setItem('pigmeaGmaoData', JSON.stringify(datos));
 }
 
+// 9. También necesitamos actualizar los datos existentes durante la carga inicial
+// Modificar la función cargarDatos
 function cargarDatos() {
     const datosGuardados = localStorage.getItem('pigmeaGmaoData');
     if (datosGuardados) {
         const datosParseados = JSON.parse(datosGuardados);
         // Actualizar el objeto datos con los valores guardados
         datos.equipamientos = datosParseados.equipamientos || [];
+        
+        // Añadir la propiedad lastModified a equipamientos que no la tengan
+        datos.equipamientos.forEach(equipamiento => {
+            if (!equipamiento.lastModified) {
+                equipamiento.lastModified = new Date().toISOString();
+            }
+        });
+        
         datos.planes = datosParseados.planes || [];
         datos.preventivos = datosParseados.preventivos || [];
         datos.currentExportType = datosParseados.currentExportType;
@@ -205,7 +215,8 @@ function actualizarEquipamiento() {
             key: newKey,
             prefijo,
             codigo,
-            descripcion: truncateText(descripcion, 100)
+            descripcion: truncateText(descripcion, 100),
+            lastModified: new Date().toISOString() // Agregar fecha de modificación
         };
         
         // Si la clave cambió, actualizar referencias en planes y preventivos
@@ -230,6 +241,14 @@ function actualizarEquipamiento() {
         cancelarEdicionEquipamiento();
     }
     guardarDatos();
+}
+
+function actualizarFechaModificacionEquipamiento(equipamientoKey) {
+    const index = datos.equipamientos.findIndex(e => e.key === equipamientoKey);
+    if (index !== -1) {
+        datos.equipamientos[index].lastModified = new Date().toISOString();
+        guardarDatos();
+    }
 }
 
 function cancelarEdicionEquipamiento() {
@@ -338,6 +357,15 @@ function actualizarTablaEquipamientos() {
         tdEstado.textContent = `${tienePlan ? '✅' : '❌'} | ${tienePreventivo ? '✅' : '❌'}`;
         tdEstado.className = 'estado-equipamiento';
         
+        // Agregar columna de última modificación
+        const tdLastModified = document.createElement('td');
+        if (equipamiento.lastModified) {
+            const fecha = new Date(equipamiento.lastModified);
+            tdLastModified.textContent = formatearFecha(fecha);
+        } else {
+            tdLastModified.textContent = 'No disponible';
+        }
+        
         const tdActions = document.createElement('td');
         
         // Botón de edición
@@ -356,12 +384,30 @@ function actualizarTablaEquipamientos() {
         
         tr.appendChild(tdKey);
         tr.appendChild(tdDesc);
-        tr.appendChild(tdEstado); // Agregar la columna de estado
+        tr.appendChild(tdEstado);
+        tr.appendChild(tdLastModified); // Agregar nueva columna
         tr.appendChild(tdActions);
         
         tbody.appendChild(tr);
     });
 }
+
+
+// 3. Agregar una función para formatear la fecha de manera legible
+function formatearFecha(fecha) {
+    const opciones = { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit',
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit'
+    };
+    return fecha.toLocaleString(undefined, opciones);
+}
+
+
+
 
 function actualizarSelectorEquipamientos(selectorId) {
     const selector = document.getElementById(selectorId);
@@ -571,6 +617,9 @@ function agregarPlanMantenimiento() {
         alert('El equipamiento seleccionado no es válido.');
         return;
     }
+    if (equipamientoKey) { // Solo actualizar si es un equipamiento específico (no "Todos")
+        actualizarFechaModificacionEquipamiento(equipamientoKey);
+    }
     
     const descripcionPlan = `${equipamiento.descripcion} - ${periodicidad}`;
     
@@ -582,6 +631,8 @@ function agregarPlanMantenimiento() {
         periodicidad,
         tareas: [...datos.tareasTemp] // Copia las tareas temporales
     };
+
+   
     
     datos.planes.push(plan);
     actualizarTablaPlanes();
@@ -593,6 +644,12 @@ function agregarPlanMantenimiento() {
     datos.tareasTemp = []; // Limpiar tareas temporales
     actualizarTablaTareas(); // Actualizar tabla de tareas
     guardarDatos();
+
+
+
+
+
+
 }
 
 function eliminarPlan(planKey) {
@@ -843,6 +900,10 @@ function agregarPreventivo() {
         asset: equipamientoKey,
         plannedWork
     };
+
+    if (equipamientoKey) { // Solo actualizar si es un equipamiento específico (no "Todos")
+        actualizarFechaModificacionEquipamiento(equipamientoKey);
+    }
     
     datos.preventivos.push(preventivo);
     actualizarTablaPreventivos();
@@ -1475,6 +1536,8 @@ function procesarCargaMasivaEquipamientos() {
             prefijo,
             codigo,
             descripcion: truncateText(descripcionCompleta, 100)
+            lastModified: new Date().toISOString()
+            
         };
         
         datos.equipamientos.push(equipamiento);
@@ -1495,6 +1558,9 @@ function procesarCargaMasivaEquipamientos() {
     } else {
         alert(`No se pudo agregar ningún equipamiento.\nErrores encontrados:\n${errores.join('\n')}`);
     }
+    
+
+
     guardarDatos();
 }
 
@@ -2013,9 +2079,10 @@ function previsualizarDatos(tipo) {
         case 'equipamientos':
             if (datos.equipamientos.length > 0) {
                 hasData = true;
-                csv = 'Key,Descripcion\n';
+                csv = 'Key,Descripcion,UltimaModificacion\n';
                 datos.equipamientos.forEach(e => {
-                    csv += `${escapeCSV(e.key)},${escapeCSV(e.descripcion)}\n`;
+                    const fechaMod = e.lastModified ? e.lastModified : '';
+                    csv += `${escapeCSV(e.key)},${escapeCSV(e.descripcion)},${escapeCSV(fechaMod)}\n`;
                 });
             }
             break;
@@ -2106,12 +2173,13 @@ function previsualizarDatosExcel(tipo) {
         case 'equipamientos':
             if (datos.equipamientos.length === 0) break;
             hasData = true;
-            headerRow.innerHTML = '<th>Key</th><th>Descripcion</th>';
+            headerRow.innerHTML = '<th>Key</th><th>Descripcion</th><th>Última Modificación</th>';
             table.appendChild(headerRow);
             
             datos.equipamientos.forEach(e => {
                 let row = document.createElement('tr');
-                row.innerHTML = `<td>${e.key}</td><td>${e.descripcion}</td>`;
+                const fechaMod = e.lastModified ? formatearFecha(new Date(e.lastModified)) : 'No disponible';
+                row.innerHTML = `<td>${e.key}</td><td>${e.descripcion}</td><td>${fechaMod}</td>`;
                 table.appendChild(row);
             });
             break;
