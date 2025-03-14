@@ -1477,7 +1477,7 @@ function cancelarEdicionPreventivo() {
 
 let modoEdicionTarea = null;
 
-ffunction editarTarea(taskKey) {
+function editarTarea(taskKey) {
     const tarea = datos.tareasTemp.find(t => t.taskKey === taskKey);
     if (!tarea) return;
     
