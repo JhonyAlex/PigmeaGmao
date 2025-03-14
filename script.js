@@ -365,7 +365,7 @@ function actualizarTablaEquipamientos() {
 
 function actualizarSelectorEquipamientos(selectorId) {
     const selector = document.getElementById(selectorId);
-    selector.innerHTML = '<option value="">-- Seleccionar equipamiento --</option>';
+    selector.innerHTML = '<option value="">-- Todos los equipamientos --</option>';
     
     datos.equipamientos.forEach(equipamiento => {
         // Verificar si el equipamiento tiene un plan de mantenimiento
