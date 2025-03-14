@@ -663,7 +663,20 @@ function eliminarPlan(planKey) {
         return;
     }
     
-    datos.planes = datos.planes.filter(p => p.planKey !== planKey);
+    // Guardar referencia al equipamiento antes de eliminar el plan
+    const plan = datos.planes.find(p => p.planKey === planKey);
+    if (plan) {
+        const equipamientoKey = plan.equipamientoKey;
+        
+        // Eliminar el plan
+        datos.planes = datos.planes.filter(p => p.planKey !== planKey);
+        
+        // Actualizar fecha de modificación del equipamiento relacionado
+        actualizarFechaModificacionEquipamiento(equipamientoKey);
+    } else {
+        datos.planes = datos.planes.filter(p => p.planKey !== planKey);
+    }
+    
     actualizarTablaPlanes();
     actualizarSelectorPlanes();
     actualizarContextoActual();
@@ -918,7 +931,20 @@ actualizarTablaEquipamientos();
 }
 
 function eliminarPreventivo(id) {
-    datos.preventivos = datos.preventivos.filter(p => p.id !== id);
+    // Guardar referencia al equipamiento antes de eliminar el preventivo
+    const preventivo = datos.preventivos.find(p => p.id === id);
+    if (preventivo) {
+        const equipamientoKey = preventivo.asset;
+        
+        // Eliminar el preventivo
+        datos.preventivos = datos.preventivos.filter(p => p.id !== id);
+        
+        // Actualizar fecha de modificación del equipamiento relacionado
+        actualizarFechaModificacionEquipamiento(equipamientoKey);
+    } else {
+        datos.preventivos = datos.preventivos.filter(p => p.id !== id);
+    }
+    
     actualizarTablaPreventivos();
     guardarDatos();
 }
@@ -1138,6 +1164,8 @@ let modoEdicionPlan = null;
 function editarPlan(planKey) {
     const plan = datos.planes.find(p => p.planKey === planKey);
     if (!plan) return;
+
+    actualizarFechaModificacionEquipamiento(plan.equipamientoKey);
     
     // Establecer modo edición
     modoEdicionPlan = planKey;
@@ -1286,7 +1314,8 @@ let modoEdicionPreventivo = null;
 function editarPreventivo(id) {
     const preventivo = datos.preventivos.find(p => p.id === id);
     if (!preventivo) return;
-    
+    // Añadir esta línea para actualizar la fecha del equipamiento cuando se edita un preventivo
+    actualizarFechaModificacionEquipamiento(preventivo.asset);
     // Establecer modo edición
     modoEdicionPreventivo = id;
     
@@ -1535,7 +1564,7 @@ function procesarCargaMasivaEquipamientos() {
             key,
             prefijo,
             codigo,
-            descripcion: truncateText(descripcionCompleta, 100)
+            descripcion: truncateText(descripcionCompleta, 100),
             lastModified: new Date().toISOString()
             
         };
