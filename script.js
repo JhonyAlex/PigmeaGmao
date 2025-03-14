@@ -176,6 +176,10 @@ function editarEquipamiento(key) {
         };
         btnAgregar.parentNode.insertBefore(btnCancelar, btnAgregar.nextSibling);
     }
+    
+    // Desplazarse al formulario de edición
+    document.getElementById('prefijo-equipo').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('prefijo-equipo').focus();
 }
 
 function actualizarEquipamiento() {
@@ -1174,12 +1178,11 @@ function editarPlan(planKey) {
     document.getElementById('equipamiento-plan').value = plan.equipamientoKey;
     document.getElementById('plan-key').value = plan.planKey;
     document.getElementById('periodicidad').value = plan.periodicidad;
-        // Actualizar contexto
-        actualizarContextoActual();
+    // Actualizar contexto
+    actualizarContextoActual();
 
-         // Bloquear cambio de equipamiento durante edición
+    // Bloquear cambio de equipamiento durante edición
     document.getElementById('equipamiento-plan').disabled = true;
-
 
     // Cargar las tareas del plan en tareasTemp
     datos.tareasTemp = JSON.parse(JSON.stringify(plan.tareas)); // Copia profunda de las tareas
@@ -1199,7 +1202,12 @@ function editarPlan(planKey) {
         btnCancelar.onclick = cancelarEdicionPlan;
         btnAgregarPlan.parentNode.insertBefore(btnCancelar, btnAgregarPlan.nextSibling);
     }
+    
+    // Desplazarse al formulario de edición
+    document.getElementById('equipamiento-plan').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('plan-key').focus();
 }
+
 
 function actualizarPlan() {
     if (!modoEdicionPlan) return;
@@ -1347,6 +1355,10 @@ function editarPreventivo(id) {
                 occursInput.value = pw.occursEvery;
             }
         });
+        
+        // Desplazarse al formulario de edición (después de que se hayan actualizado las frecuencias)
+        document.getElementById('id-inicial').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById('equipamiento-preventivo').focus();
     }, 100);
     
     // Cambiar el texto del botón
@@ -1465,7 +1477,7 @@ function cancelarEdicionPreventivo() {
 
 let modoEdicionTarea = null;
 
-function editarTarea(taskKey) {
+ffunction editarTarea(taskKey) {
     const tarea = datos.tareasTemp.find(t => t.taskKey === taskKey);
     if (!tarea) return;
     
@@ -1496,14 +1508,18 @@ function editarTarea(taskKey) {
         btnAgregar.parentNode.insertBefore(btnCancelar, btnAgregar.nextSibling);
     }
 
-     // Marcar visualmente la fila que se está editando
-     const filasTareas = document.querySelectorAll("#tareas-body tr");
-     filasTareas.forEach(fila => {
-         fila.classList.remove('editing-row');
-         if (fila.querySelector('td').textContent === taskKey) {
-             fila.classList.add('editing-row');
-         }
-     });
+    // Marcar visualmente la fila que se está editando
+    const filasTareas = document.querySelectorAll("#tareas-body tr");
+    filasTareas.forEach(fila => {
+        fila.classList.remove('editing-row');
+        if (fila.querySelector('td').textContent === taskKey) {
+            fila.classList.add('editing-row');
+        }
+    });
+    
+    // Desplazarse al formulario de edición
+    document.getElementById('task-key').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('task-key').focus();
 }
 
 function procesarCargaMasivaEquipamientos() {
