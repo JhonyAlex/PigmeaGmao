@@ -7,7 +7,46 @@ const datos = {
     currentExportType: null
     
 };
+// Función para realizar un desplazamiento suave personalizado
+function scrollSmoothly(targetElement, duration = 800) {
+    // Obtener la posición inicial y final
+    const startPosition = window.pageYOffset;
+    const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
+    
+    // Calcular la distancia
+    const distance = targetPosition - startPosition;
+    
+    // Si el elemento está muy cerca, aumentar la duración para que sea más lento
+    const closeThreshold = 300; // Considerar "cerca" si está a 300px o menos
+    let adjustedDuration = duration;
+    
+    if (Math.abs(distance) <= closeThreshold) {
+        // Ajustar la duración para que sea más lenta cuando está cerca
+        adjustedDuration = duration + 200; // Añadir 200ms adicionales
+    }
+    
+    let startTime = null;
 
+    function animation(currentTime) {
+        if (startTime === null) startTime = currentTime;
+        const timeElapsed = currentTime - startTime;
+        const progress = Math.min(timeElapsed / adjustedDuration, 1);
+        
+        // Función de easing para un movimiento más natural
+        const easeInOutQuad = t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+        
+        window.scrollTo(0, startPosition + distance * easeInOutQuad(progress));
+        
+        if (timeElapsed < adjustedDuration) {
+            requestAnimationFrame(animation);
+        } else {
+            // Al finalizar, asegurarse de que el elemento está en el viewport
+            targetElement.focus();
+        }
+    }
+    
+    requestAnimationFrame(animation);
+}
 // Funciones para localStorage - AÑADIR DESPUÉS DE LA DEFINICIÓN DE DATOS
 function guardarDatos() {
     localStorage.setItem('pigmeaGmaoData', JSON.stringify(datos));
@@ -177,9 +216,8 @@ function editarEquipamiento(key) {
         btnAgregar.parentNode.insertBefore(btnCancelar, btnAgregar.nextSibling);
     }
     
-    // Desplazarse al formulario de edición
-    document.getElementById('prefijo-equipo').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    document.getElementById('prefijo-equipo').focus();
+    // Usar la función de desplazamiento personalizada
+    scrollSmoothly(document.getElementById('prefijo-equipo'));
 }
 
 function actualizarEquipamiento() {
@@ -1188,7 +1226,7 @@ function editarPlan(planKey) {
     datos.tareasTemp = JSON.parse(JSON.stringify(plan.tareas)); // Copia profunda de las tareas
     actualizarTablaTareas();
     
-    // Cambiar el texto del botón de agregar plan (el que está fuera de la carga masiva)
+    // Cambiar el texto del botón de agregar plan
     const btnAgregarPlan = document.querySelector('#planes > button.action-button');
     btnAgregarPlan.textContent = 'Actualizar Plan';
     btnAgregarPlan.onclick = actualizarPlan;
@@ -1203,11 +1241,10 @@ function editarPlan(planKey) {
         btnAgregarPlan.parentNode.insertBefore(btnCancelar, btnAgregarPlan.nextSibling);
     }
     
-    // Desplazarse al formulario de edición
-    document.getElementById('equipamiento-plan').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    document.getElementById('plan-key').focus();
+    // Usar la función de desplazamiento personalizada
+    scrollSmoothly(document.getElementById('equipamiento-plan'));
+    setTimeout(() => document.getElementById('plan-key').focus(), 850); // Dar tiempo para el desplazamiento
 }
-
 
 function actualizarPlan() {
     if (!modoEdicionPlan) return;
@@ -1356,9 +1393,9 @@ function editarPreventivo(id) {
             }
         });
         
-        // Desplazarse al formulario de edición (después de que se hayan actualizado las frecuencias)
-        document.getElementById('id-inicial').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        document.getElementById('equipamiento-preventivo').focus();
+        // Usar la función de desplazamiento personalizada
+        scrollSmoothly(document.getElementById('id-inicial'));
+        setTimeout(() => document.getElementById('equipamiento-preventivo').focus(), 850); // Dar tiempo para el desplazamiento
     }, 100);
     
     // Cambiar el texto del botón
@@ -1477,50 +1514,7 @@ function cancelarEdicionPreventivo() {
 
 let modoEdicionTarea = null;
 
-function editarTarea(taskKey) {
-    const tarea = datos.tareasTemp.find(t => t.taskKey === taskKey);
-    if (!tarea) return;
-    
-    // Establecer modo edición
-    modoEdicionTarea = taskKey;
-    
-    // Rellenar campos con datos actuales
-    document.getElementById('task-key').value = tarea.taskKey;
-    document.getElementById('task-descripcion').value = tarea.descripcion;
-    document.getElementById('task-duracion').value = tarea.duracion;
-    
-    // Cambiar el texto del botón
-    const btnAgregar = document.querySelector('.add-task-btn');
-    btnAgregar.textContent = 'Actualizar Tarea';
-    btnAgregar.onclick = function() {
-        actualizarTarea();
-    };
-    
-    // Añadir botón para cancelar edición
-    if (!document.getElementById('cancelar-edicion-tarea')) {
-        const btnCancelar = document.createElement('button');
-        btnCancelar.id = 'cancelar-edicion-tarea';
-        btnCancelar.className = 'action-button cancel-button';
-        btnCancelar.textContent = 'Cancelar';
-        btnCancelar.onclick = function() {
-            cancelarEdicionTarea();
-        };
-        btnAgregar.parentNode.insertBefore(btnCancelar, btnAgregar.nextSibling);
-    }
-
-    // Marcar visualmente la fila que se está editando
-    const filasTareas = document.querySelectorAll("#tareas-body tr");
-    filasTareas.forEach(fila => {
-        fila.classList.remove('editing-row');
-        if (fila.querySelector('td').textContent === taskKey) {
-            fila.classList.add('editing-row');
-        }
-    });
-    
-    // Desplazarse al formulario de edición
-    document.getElementById('task-key').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    document.getElementById('task-key').focus();
-}
+function editarTarea(taskKey)
 
 function procesarCargaMasivaEquipamientos() {
     const texto = document.getElementById('carga-masiva-equipamientos').value.trim();
