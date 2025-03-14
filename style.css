@@ -437,3 +437,29 @@ th.sortable.desc::after {
     content: '↓';
     color: #3498db;
 }
+
+/* Estilos para el buscador */
+.search-container {
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.search-input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 300px;
+    font-size: 14px;
+}
+
+.search-input:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 3px rgba(52, 152, 219, 0.5);
+}
+
+/* Estilos para filas ocultas */
+tr.hidden-row {
+    display: none;
+}

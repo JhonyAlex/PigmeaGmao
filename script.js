@@ -8,8 +8,6 @@ const datos = {
     
 };
 
-
-
 // Funciones para localStorage - AÑADIR DESPUÉS DE LA DEFINICIÓN DE DATOS
 function guardarDatos() {
     localStorage.setItem('pigmeaGmaoData', JSON.stringify(datos));
@@ -388,6 +386,24 @@ function actualizarSelectorEquipamientos(selectorId) {
         option.value = equipamiento.key;
         option.textContent = `${equipamiento.key} - ${equipamiento.descripcion}${indicador}`;
         selector.appendChild(option);
+    });
+}
+
+// Función para buscar en la tabla de equipamientos
+function buscarEquipamientos() {
+    const textoBusqueda = document.getElementById('buscar-equipamiento').value.toLowerCase();
+    const filas = document.querySelectorAll('#equipamientos-body tr');
+    
+    filas.forEach(fila => {
+        const textoEquipamiento = fila.cells[0].textContent.toLowerCase(); // Key
+        const textoDescripcion = fila.cells[1].textContent.toLowerCase();  // Descripción
+        
+        // Mostrar la fila si el texto de búsqueda está en cualquier campo
+        if (textoEquipamiento.includes(textoBusqueda) || textoDescripcion.includes(textoBusqueda)) {
+            fila.classList.remove('hidden-row');
+        } else {
+            fila.classList.add('hidden-row');
+        }
     });
 }
 
@@ -2222,7 +2238,7 @@ document.getElementById('equipamiento-plan').addEventListener('change', function
     destacarPlanesRelacionados();
 });
 
-// Agregar esta nueva función
+// Función mejorada para destacar planes relacionados
 function destacarPlanesRelacionados() {
     const equipamientoKey = document.getElementById('equipamiento-plan').value;
     
@@ -2230,10 +2246,11 @@ function destacarPlanesRelacionados() {
     const filas = document.querySelectorAll('#planes-body tr');
     filas.forEach(fila => {
         fila.classList.remove('fila-relacionada');
+        fila.style.display = ''; // Mostrar todas las filas primero
     });
     
     if (equipamientoKey) {
-        // Resaltar las filas de los planes relacionados con este equipamiento
+        // Resaltar y mostrar solo las filas de los planes relacionados con este equipamiento
         filas.forEach(fila => {
             // La primera celda (índice 0) contiene el planKey
             const planKey = fila.cells[0].textContent;
@@ -2241,12 +2258,15 @@ function destacarPlanesRelacionados() {
             
             if (plan && plan.equipamientoKey === equipamientoKey) {
                 fila.classList.add('fila-relacionada');
+                fila.style.display = ''; // Asegurarse que sea visible
+            } else {
+                fila.style.display = 'none'; // Ocultar filas no relacionadas
             }
         });
     }
 }
 
-// Agregar esta nueva función
+// Función mejorada para destacar preventivos relacionados
 function destacarPreventivosRelacionados() {
     const equipamientoKey = document.getElementById('equipamiento-preventivo').value;
     
@@ -2254,16 +2274,20 @@ function destacarPreventivosRelacionados() {
     const filas = document.querySelectorAll('#preventivos-body tr');
     filas.forEach(fila => {
         fila.classList.remove('fila-relacionada');
+        fila.style.display = ''; // Mostrar todas las filas primero
     });
     
     if (equipamientoKey) {
-        // Resaltar las filas de los preventivos relacionados con este equipamiento
+        // Resaltar y mostrar solo las filas de los preventivos relacionados con este equipamiento
         filas.forEach(fila => {
             // La tercera celda (índice 2) contiene el asset (equipamientoKey)
             const asset = fila.cells[2].textContent;
             
             if (asset === equipamientoKey) {
                 fila.classList.add('fila-relacionada');
+                fila.style.display = ''; // Asegurarse que sea visible
+            } else {
+                fila.style.display = 'none'; // Ocultar filas no relacionadas
             }
         });
     }
@@ -2342,6 +2366,14 @@ function ordenarTabla(tabla, columnaIndex, headerElement) {
     }
 }
 
+// Event listener para el buscador de equipamientos
+document.addEventListener('DOMContentLoaded', function() {
+    const buscarInput = document.getElementById('buscar-equipamiento');
+    if (buscarInput) {
+        buscarInput.addEventListener('input', buscarEquipamientos);
+    }
+});
+
 // Función auxiliar para extraer números de textos como "PR0000123" o "Plan-45"
 function extraerNumero(texto) {
     // Buscar secuencias de dígitos en el texto
@@ -2353,3 +2385,5 @@ function extraerNumero(texto) {
     }
     return NaN; // No es un número
 }
+
+
