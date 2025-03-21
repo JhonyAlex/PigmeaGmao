@@ -1413,6 +1413,30 @@ function editarPreventivo(id) {
         btnAgregar.parentNode.insertBefore(btnCancelar, btnAgregar.nextSibling);
     }
 }
+ // Añadir botón para cancelar edición
+ if (!document.getElementById('cancelar-edicion-preventivo')) {
+    const btnCancelar = document.createElement('button');
+    btnCancelar.id = 'cancelar-edicion-preventivo';
+    btnCancelar.className = 'action-button cancel-button';
+    btnCancelar.textContent = 'Cancelar Edición';
+    btnCancelar.onclick = cancelarEdicionPreventivo;
+    btnAgregar.parentNode.insertBefore(btnCancelar, btnAgregar.nextSibling);
+}
+
+// Añadir botón para borrar preventivo
+if (!document.getElementById('borrar-preventivo')) {
+    const btnBorrar = document.createElement('button');
+    btnBorrar.id = 'borrar-preventivo';
+    btnBorrar.className = 'action-button delete-button';
+    btnBorrar.textContent = 'Borrar Preventivo';
+    btnBorrar.onclick = function() {
+        if (confirm('¿Estás seguro de que quieres borrar este preventivo?')) {
+            eliminarPreventivo(preventivo.id);
+            cancelarEdicionPreventivo();
+        }
+    };
+    btnAgregar.parentNode.insertBefore(btnBorrar, btnAgregar.nextSibling);
+}
 
 function actualizarPreventivo() {
     if (!modoEdicionPreventivo) return;
@@ -1504,10 +1528,19 @@ function cancelarEdicionPreventivo() {
         btnAgregar.textContent = 'Agregar Preventivo';
         btnAgregar.onclick = agregarPreventivo;
     }
-    
-    // Eliminar botón cancelar
-    const btnCancelar = document.getElementById('cancelar-edicion-preventivo');
-    if (btnCancelar) btnCancelar.remove();
+
+      // Eliminar botón cancelar
+      const btnCancelar = document.getElementById('cancelar-edicion-preventivo');
+      if (btnCancelar) btnCancelar.remove();
+  
+      // Eliminar botón borrar
+      const btnBorrar = document.getElementById('borrar-preventivo');
+      if (btnBorrar) btnBorrar.remove();
+
+
+
+
+
 } // Elimina la llave extra que hay aquí
 
 
