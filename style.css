@@ -8,18 +8,6 @@ body {
     padding: 20px;
 }
 
-/* .container is now handled by bootstrap */
-/*
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-*/
-
 h1 {
     text-align: center;
     margin-bottom: 20px;
@@ -38,147 +26,9 @@ h3 {
     margin: 15px 0;
 }
 
-/* .tabs is now handled by bootstrap */
-/*
-.tabs {
-    display: flex;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #ddd;
-}
-*/
-
-/* .tab-button is now handled by bootstrap */
-/*
-.tab-button {
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-bottom: none;
-    padding: 10px 15px;
-    cursor: pointer;
-    margin-right: 5px;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    font-weight: bold;
-}
-*/
-
-/* .tab-button.active is now handled by bootstrap */
-/*
-.tab-button.active {
-    background-color: #fff;
-    border-bottom: 2px solid #3498db;
-    color: #3498db;
-}
-*/
-
-/* .tab-content is now handled by bootstrap */
-/*
-.tab-content {
-    display: none;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-top: none;
-}
-*/
-
-/* .tab-content.active is now handled by bootstrap */
-/*
-.tab-content.active {
-    display: block;
-}
-*/
-
-/* .form-group is now handled by bootstrap */
-/*
-.form-group {
-    margin-bottom: 15px;
-}
-*/
-
-/* label is now handled by bootstrap */
-/*
-label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-*/
-
-/* input, select, textarea are now handled by bootstrap */
-/*
-input, select, textarea {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-*/
-
 textarea {
     resize: vertical;
 }
-
-/* .action-button is now handled by bootstrap */
-/*
-.action-button {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    margin-right: 10px;
-    margin-bottom: 10px;
-}
-*/
-
-/* .action-button:hover is now handled by bootstrap */
-/*
-.action-button:hover {
-    background-color: #2980b9;
-}
-*/
-
-/* .table-container is now handled by bootstrap */
-/*
-.table-container {
-    margin-top: 20px;
-    overflow-x: auto;
-}
-*/
-
-/* table is now handled by bootstrap */
-/*
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-}
-*/
-
-/* th, td are now handled by bootstrap */
-/*
-th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-}
-*/
-
-/* th is now handled by bootstrap */
-/*
-th {
-    background-color: #f2f2f2;
-}
-*/
-
-/* tr:nth-child(even) is now handled by bootstrap */
-/*
-tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-*/
 
 .export-options {
     display: flex;
@@ -212,7 +62,6 @@ small {
 }
 
 .delete-button {
-    /*background-color: #e74c3c;*/
     color: white;
     border: none;
     padding: 5px 10px;
@@ -224,9 +73,7 @@ small {
     background-color: #c0392b;
 }
 
-
 .edit-button {
-    /*background-color: #3498db;*/
     color: white;
     border: none;
     padding: 5px 10px;
@@ -249,64 +96,16 @@ small {
 }
 
 /* Asegurar que los botones en las celdas de acción estén uno al lado del otro */
-td .edit-button, td .delete-button {
+td .edit-button,
+td .delete-button {
     display: inline-block;
     margin-bottom: 5px;
 }
-
-
-
-/* .frequency-row is now handled by bootstrap */
-/*
-.frequency-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
-    align-items: center;
-}
-*/
-
-/* .frequency-row select, .frequency-row input are now handled by bootstrap */
-/*
-.frequency-row select, .frequency-row input {
-    flex: 1;
-}
-*/
 
 .frequency-row span {
     width: 120px;
     font-weight: normal;
 }
-
-
-
-/* .task-form is now handled by bootstrap */
-/*
-.task-form {
-    display: flex;
-    margin-bottom: 15px;
-    gap: 10px;
-    align-items: flex-start;
-}
-*/
-
-/* .task-inputs is now handled by bootstrap */
-/*
-.task-inputs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    flex: 1;
-}
-*/
-
-/* .task-inputs input is now handled by bootstrap */
-/*
-.task-inputs input {
-    flex: 1;
-    min-width: 120px;
-}
-*/
 
 .add-task-btn {
     white-space: nowrap;
@@ -321,53 +120,19 @@ td .edit-button, td .delete-button {
 
 /* Modificar la media query para dispositivos móviles (línea 200) */
 @media (max-width: 768px) {
-    /* .tabs is now handled by bootstrap */
-    /*
-    .tabs {
-        flex-direction: column;
-    }
-    */
-    
-    /* .tab-button is now handled by bootstrap */
-    /*
-    .tab-button {
-        margin-bottom: 3px;
-        border-radius: 3px;
+    .frequency-row span,
+    .add-task-btn {
         width: 100%;
     }
-    */
-    
-    /* .frequency-row is now handled by bootstrap */
-    /*
-    .frequency-row, .task-form {
-        flex-direction: column;
-        gap: 5px;
-    }
-    */
-    
-    .frequency-row span, .add-task-btn {
-        width: 100%;
-    }
-}
-
-.success-button {
-    /*background-color: #27ae60;*/
 }
 
 .success-button:hover {
     background-color: #219653;
 }
 
-.primary-button {
-    /*background-color: #9b59b6;*/
-}
-
 .primary-button:hover {
     background-color: #8e44ad;
 }
-
-
-
 
 /* Estilos para el panel de contexto */
 .context-panel {
@@ -456,21 +221,23 @@ td .edit-button, td .delete-button {
     padding: 0px 0px 15px 0px;
 }
 
-.container p{
+.container p {
     font-size: small;
     color: gray;
     padding: 0px 0px 15px 0px;
 }
 
-
 .fila-relacionada {
-    background-color: rgba(144, 238, 144, 0.5) !important; /* Verde más intenso y prioridad importante */
+    background-color: rgba(144, 238, 144, 0.5) !important;
+    /* Verde más intenso y prioridad importante */
     transition: background-color 0.3s;
-    border-left: 3px solid #2e8b57; /* Borde izquierdo verde oscuro para mayor visualización */
+    border-left: 3px solid #2e8b57;
+    /* Borde izquierdo verde oscuro para mayor visualización */
 }
 
 .fila-relacionada:hover {
-    background-color: rgba(144, 238, 144, 0.7) !important; /* Aún más intenso al pasar el mouse */
+    background-color: rgba(144, 238, 144, 0.7) !important;
+    /* Aún más intenso al pasar el mouse */
 }
 
 button.action-button.warning-button {
@@ -481,7 +248,8 @@ button.action-button.warning-button {
 th.sortable {
     cursor: pointer;
     position: relative;
-    padding-right: 20px; /* Espacio para el ícono */
+    padding-right: 20px;
+    /* Espacio para el ícono */
 }
 
 th.sortable:hover {
@@ -505,25 +273,6 @@ th.sortable.desc::after {
     content: '↓';
     color: #3498db;
 }
-
-/* .search-container is now handled by bootstrap */
-/*
-.search-container {
-    margin-bottom: 15px;
-    display: flex;
-    justify-content: flex-end;
-}
-*/
-
-/* .search-input is now handled by bootstrap */
-/*
-.search-input {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-}
-*/
 
 .search-input:focus {
     border-color: #3498db;
