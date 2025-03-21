@@ -1,62 +1,83 @@
 <!DOCTYPE html>
 <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Your Page Title</title>
-        <!-- Include Bootstrap CSS from CDN -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-        <!-- Your custom CSS -->
-        <link rel="stylesheet" href="style.css">
-    </head>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Page Title</title>
+    <!-- Include Bootstrap CSS from CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Your custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
 <body>
     <div class="container">
         <h1>Control de equipos y gestión del GMAO VK</h1>
-        <center><p>Una herramienta especializada para crear y gestionar equipamientos, planes de mantenimiento y preventivos para su fácil importación al sistema Value Keep GMAO.</p></center>
-        <div class="tabs">
-            <button class="tab-button active" onclick="openTab('equipamientos')">1. Equipamientos</button>
-            <button class="tab-button" onclick="openTab('planes')">2. Planes de Mantenimiento</button>
-            <button class="tab-button" onclick="openTab('preventivos')">3. Preventivos</button>
-            <button class="tab-button" onclick="openTab('exportar')">4. Exportar</button>
-        </div>
-        
+        <center>
+            <p>Una herramienta especializada para crear y gestionar equipamientos, planes de mantenimiento y preventivos
+                para su fácil importación al sistema Value Keep GMAO.</p>
+        </center>
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <button class="nav-link active" onclick="openTab('equipamientos')">1. Equipamientos</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" onclick="openTab('planes')">2. Planes de Mantenimiento</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" onclick="openTab('preventivos')">3. Preventivos</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" onclick="openTab('exportar')">4. Exportar</button>
+            </li>
+        </ul>
+
         <div id="equipamientos" class="tab-content active">
             <h2>Equipamientos</h2>
-            
-            <div class="form-group">
-                <label for="prefijo-equipo">Prefijo:</label>
-                <input type="text" id="prefijo-equipo" placeholder="Ej: PIG" maxlength="10" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="codigo-equipo">Código:</label>
-                <input type="text" id="codigo-equipo" placeholder="Ej: WM3-DES" maxlength="20" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="descripcion-equipo">Descripción (máx. 100 caracteres):</label>
-                <input type="text" id="descripcion-equipo" placeholder="Ej: Desbobinador IMPRESORA WM3" maxlength="100" required>
+
+            <div class="mb-3">
+                <label for="prefijo-equipo" class="form-label">Prefijo:</label>
+                <input type="text" id="prefijo-equipo" class="form-control" placeholder="Ej: PIG" maxlength="10"
+                    required>
             </div>
 
-            <div class="form-group">
-                <label for="carga-masiva-equipamientos">Carga Masiva de Equipamientos:</label>
-                <textarea id="carga-masiva-equipamientos" rows="5" placeholder="Pegue aquí sus datos en formato: 'Prefijo-Código Descripción'&#10;Ejemplo: PIG-WM3-DES Desbobinador IMPRESORA WM3 PM00000510"></textarea>
-                <small>Cada línea será procesada como un equipamiento separado.</small>
-                <button type="button" class="action-button" onclick="procesarCargaMasivaEquipamientos()">Procesar Carga Masiva</button>
-                <button class="action-button" onclick="agregarEquipamiento()">Agregar Equipamiento</button>
-            
+            <div class="mb-3">
+                <label for="codigo-equipo" class="form-label">Código:</label>
+                <input type="text" id="codigo-equipo" class="form-control" placeholder="Ej: WM3-DES" maxlength="20"
+                    required>
             </div>
-            
-            
-            
-            <div class="table-container">
+
+            <div class="mb-3">
+                <label for="descripcion-equipo" class="form-label">Descripción (máx. 100 caracteres):</label>
+                <input type="text" id="descripcion-equipo" class="form-control"
+                    placeholder="Ej: Desbobinador IMPRESORA WM3" maxlength="100" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="carga-masiva-equipamientos" class="form-label">Carga Masiva de Equipamientos:</label>
+                <textarea id="carga-masiva-equipamientos" class="form-control" rows="5"
+                    placeholder="Pegue aquí sus datos en formato: 'Prefijo-Código Descripción'&#10;Ejemplo: PIG-WM3-DES Desbobinador IMPRESORA WM3 PM00000510"></textarea>
+                <small class="text-muted">Cada línea será procesada como un equipamiento separado.</small>
+                <button type="button" class="btn btn-primary"
+                    onclick="procesarCargaMasivaEquipamientos()">Procesar Carga Masiva</button>
+                <button class="btn btn-success" onclick="agregarEquipamiento()">Agregar Equipamiento</button>
+
+            </div>
+
+
+
+            <div class="table-responsive">
                 <h3>LISTADO EQUIPOS DE TRABAJO</h3>
                 <h4>F01.P07 Listado de equipos trabajo, enero 2025</h4>
                 <p>Refresca la web para mantener esta tabla actualizada (presiona F5)</p>
-                <div class="search-container">
-                    <input type="text" id="buscar-equipamiento" placeholder="Buscar equipamientos..." class="search-input">
+                <div class="d-flex justify-content-end mb-3">
+                    <input type="text" id="buscar-equipamiento" placeholder="Buscar equipamientos..."
+                        class="form-control w-auto">
                 </div>
-                <table id="tabla-equipamientos" aria-label="Equipamientos agregados">
+                <table id="tabla-equipamientos" class="table table-striped table-bordered"
+                    aria-label="Equipamientos agregados">
                     <thead>
                         <tr>
                             <th>Key</th>
@@ -70,25 +91,26 @@
                 </table>
             </div>
         </div>
-        
+
         <div id="planes" class="tab-content">
             <h2>Planes de Mantenimiento</h2>
-            
-            <div class="form-group">
-                <label for="equipamiento-plan">Seleccionar Equipamiento:</label>
-                <select id="equipamiento-plan" required>
+
+            <div class="mb-3">
+                <label for="equipamiento-plan" class="form-label">Seleccionar Equipamiento:</label>
+                <select id="equipamiento-plan" class="form-select" required>
                     <option value="">-- Todos los equipamientos --</option>
                 </select>
             </div>
-            
-            <div class="form-group">
-                <label for="plan-key">Plan Key:</label>
-                <input type="text" id="plan-key" placeholder="Ej: PLAN001" maxlength="20" required>
+
+            <div class="mb-3">
+                <label for="plan-key" class="form-label">Plan Key:</label>
+                <input type="text" id="plan-key" class="form-control" placeholder="Ej: PLAN001" maxlength="20"
+                    required>
             </div>
-            
-            <div class="form-group">
-                <label for="periodicidad">Periodicidad:</label>
-                <select id="periodicidad" required>
+
+            <div class="mb-3">
+                <label for="periodicidad" class="form-label">Periodicidad:</label>
+                <select id="periodicidad" class="form-select" required>
                     <option value="">-- Seleccionar periodicidad --</option>
                     <option value="Diario">Diario</option>
                     <option value="Semanal">Semanal</option>
@@ -101,59 +123,67 @@
             </div>
 
             <!-- Añadir después del selector de periodicidad -->
-<div class="context-panel" id="plan-context-panel">
-    <div class="context-item">
-        <strong>Equipamiento actual:</strong> <span id="current-equipment-display">No seleccionado</span>
-    </div>
-    <div class="context-item">
-        <strong>Plan actual:</strong> <span id="current-plan-display">Nuevo plan</span>
-    </div>
-    <div class="context-item">
-        <span id="current-mode-indicator" class="mode-indicator creation-mode">Modo: Creación</span>
-    </div>
-</div>
-            
-           <div class="form-group">
-    <h4>Tareas del Plan</h4>
-    <div class="task-form">
-        <div class="task-inputs">
-            <input type="text" id="task-key" placeholder="TaskKey" maxlength="20">
-            <input type="text" id="task-descripcion" placeholder="Descripción" maxlength="100">
-            <input type="text" id="task-duracion" placeholder="H:MM:SS" pattern="\d+:[0-5]\d:[0-5]\d">
-        </div>
-        <button type="button" class="action-button add-task-btn" onclick="agregarTarea()">Añadir Tarea</button>
-    
-        
-    
-    </div>
+            <div class="context-panel mb-3" id="plan-context-panel">
+                <div class="context-item">
+                    <strong>Equipamiento actual:</strong> <span id="current-equipment-display">No seleccionado</span>
+                </div>
+                <div class="context-item">
+                    <strong>Plan actual:</strong> <span id="current-plan-display">Nuevo plan</span>
+                </div>
+                <div class="context-item">
+                    <span id="current-mode-indicator" class="mode-indicator creation-mode">Modo: Creación</span>
+                </div>
+            </div>
 
-    <div class="form-group">
-        <label for="carga-masiva-tareas">Carga Masiva de Tareas:</label>
-        <textarea id="carga-masiva-tareas" rows="5" placeholder="Pegue aquí sus datos en formato: 'TaskKey Descripción Duración'&#10;Ejemplo: WM3-BAN-01 Comprobación de la tensión de la cadena de introducción de banda 0:10:00"></textarea>
-        <small>Cada línea será procesada como una tarea separada.</small>
-        <button type="button" class="action-button" onclick="procesarCargaMasivaTareas()">Procesar Carga Masiva</button>
-    </div>
-    <h3>Tareas cargadas</h3>
-    <div class="task-table-container">
-       <table id="tabla-tareas">            
-            <thead>                
-                <tr>
-                    <th>TaskKey</th>
-                    <th>Descripción</th>
-                    <th>Duración</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="tareas-body"></tbody>
-        </table>
-    </div>
-</div>
-            
-            <button class="action-button" onclick="agregarPlanMantenimiento()">Agregar Plan</button>
-            
-            <div class="table-container">
+            <div class="mb-3">
+                <h4>Tareas del Plan</h4>
+                <div class="row align-items-end">
+                    <div class="col-md-3 mb-3">
+                        <input type="text" id="task-key" class="form-control" placeholder="TaskKey" maxlength="20">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <input type="text" id="task-descripcion" class="form-control" placeholder="Descripción"
+                            maxlength="100">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <input type="text" id="task-duracion" class="form-control" placeholder="H:MM:SS"
+                            pattern="\d+:[0-5]\d:[0-5]\d">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <button type="button" class="btn btn-primary w-100" onclick="agregarTarea()">Añadir
+                            Tarea</button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="carga-masiva-tareas" class="form-label">Carga Masiva de Tareas:</label>
+                    <textarea id="carga-masiva-tareas" class="form-control" rows="5"
+                        placeholder="Pegue aquí sus datos en formato: 'TaskKey Descripción Duración'&#10;Ejemplo: WM3-BAN-01 Comprobación de la tensión de la cadena de introducción de banda 0:10:00"></textarea>
+                    <small class="text-muted">Cada línea será procesada como una tarea separada.</small>
+                    <button type="button" class="btn btn-primary mt-2"
+                        onclick="procesarCargaMasivaTareas()">Procesar Carga Masiva</button>
+                </div>
+                <h3>Tareas cargadas</h3>
+                <div class="task-table-container table-responsive">
+                    <table id="tabla-tareas" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>TaskKey</th>
+                                <th>Descripción</th>
+                                <th>Duración</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tareas-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <button class="btn btn-success" onclick="agregarPlanMantenimiento()">Agregar Plan</button>
+
+            <div class="table-responsive mt-3">
                 <h3>Planes Agregados</h3>
-                <table id="tabla-planes" aria-label="tabla-planes">
+                <table id="tabla-planes" class="table table-striped table-bordered" aria-label="tabla-planes">
                     <thead>
                         <tr>
                             <th>Plan Key</th>
@@ -166,42 +196,45 @@
                 </table>
             </div>
         </div>
-        
+
         <div id="preventivos" class="tab-content">
             <h2>Preventivos</h2>
-            
-            <div class="form-group">
-                <label for="id-inicial">ID Inicial:</label>
-                <input type="number" id="id-inicial" min="1" value="100" required>
+
+            <div class="mb-3">
+                <label for="id-inicial" class="form-label">ID Inicial:</label>
+                <input type="number" id="id-inicial" class="form-control" min="1" value="100" required>
             </div>
-            
-            <div class="form-group">
-                <label for="equipamiento-preventivo">Seleccionar Equipamiento:</label>
-                <select id="equipamiento-preventivo" required>
+
+            <div class="mb-3">
+                <label for="equipamiento-preventivo" class="form-label">Seleccionar Equipamiento:</label>
+                <select id="equipamiento-preventivo" class="form-select" required>
                     <option value="">-- Todos los equipamientos --</option>
                 </select>
             </div>
-            
-            <div class="form-group">
-                <label for="planes-preventivo">Seleccionar Planes:</label>
-                <select id="planes-preventivo" multiple required size="5">
+
+            <div class="mb-3">
+                <label for="planes-preventivo" class="form-label">Seleccionar Planes:</label>
+                <select id="planes-preventivo" class="form-select" multiple required size="5">
                     <!-- Opciones se generarán dinámicamente -->
                 </select>
-                <small>Mantenga presionado Ctrl (o Cmd en Mac) para seleccionar múltiples planes</small>
+                <small class="text-muted">Mantenga presionado Ctrl (o Cmd en Mac) para seleccionar múltiples
+                    planes</small>
             </div>
-            
-            <div class="form-group">
-                <label>Configuración de frecuencias:</label>
+
+            <div class="mb-3">
+                <label class="form-label">Configuración de frecuencias:</label>
                 <div id="frecuencias-container"></div>
             </div>
-            
-            <button class="action-button" onclick="agregarPreventivo()">Agregar Preventivo</button>
+
+            <button class="btn btn-success" onclick="agregarPreventivo()">Agregar Preventivo</button>
             <!-- Añadir este botón en la pestaña de preventivos, antes del botón "Agregar Preventivo" -->
-<button class="action-button primary-button" onclick="cargarPreventivosAutomaticos()">Generar Preventivos para Todos los Equipos</button>
-            
-            <div class="table-container">
+            <button class="btn btn-primary" onclick="cargarPreventivosAutomaticos()">Generar Preventivos para Todos los
+                Equipos</button>
+
+            <div class="table-responsive mt-3">
                 <h3>Preventivos Agregados</h3>
-                <table id="tabla-preventivos" aria-label="tabla-preventivos">
+                <table id="tabla-preventivos" class="table table-striped table-bordered"
+                    aria-label="tabla-preventivos">
                     <thead>
                         <tr>
                             <th>Preventive ID</th>
@@ -215,33 +248,51 @@
                 </table>
             </div>
         </div>
-        
+
+        <!-- Exportar Tab -->
         <div id="exportar" class="tab-content">
-            <h2>Exportar Datos</h2>
-            <p>Todos los datos que se previsualizan aquí, permiten copiar las columnas esenciales que necesita la base de datos para ser importada a Value Keep, solicítame cualquier columna o función extra si hace falta.</p>
+            <h2 class="mb-3">Exportar Datos</h2>
+            <p>Todos los datos que se previsualizan aquí, permiten copiar las columnas esenciales que necesita la base de
+                datos para ser importada a Value Keep, solicítame cualquier columna o función extra si hace falta.</p>
             <p>Puedes exportar para hacer un backup y llevar tus datos a cualquier otro ordenador incluso.</p>
-                <div class="export-options">
-                <button class="action-button" onclick="previsualizarDatosExcel('equipamientos')">Previsualizar Equipamientos</button>
-                <button class="action-button" onclick="previsualizarDatosExcel('planes')">Previsualizar Planes</button>
-                <button class="action-button" onclick="previsualizarDatosExcel('tareas')">Previsualizar Tareas</button>
-                <button class="action-button" onclick="previsualizarDatosExcel('preventivos')">Previsualizar Preventivos</button>
-                <button class="action-button" onclick="previsualizarDatosExcel('planned-work')">Previsualizar Planned Work</button>
-                <button class="action-button success-button" onclick="exportarTodosDatos()">Exportar Todos los Datos</button>
-                <button class="action-button primary-button" onclick="document.getElementById('importar-archivo').click()">Importar Datos</button>
-                <input type="file" id="importar-archivo" style="display: none;" accept=".json" onchange="importarDatos(this.files)">
-                <button class="action-button warning-button" onclick="borrarDatosAlmacenados()">Borrar datos almacenados</button>
+            <div class="mb-3">
+                <div class="btn-group" role="group">
+                    <button class="btn btn-secondary"
+                        onclick="previsualizarDatosExcel('equipamientos')">Previsualizar Equipamientos</button>
+                    <button class="btn btn-secondary"
+                        onclick="previsualizarDatosExcel('planes')">Previsualizar Planes</button>
+                    <button class="btn btn-secondary"
+                        onclick="previsualizarDatosExcel('tareas')">Previsualizar Tareas</button>
+                    <button class="btn btn-secondary"
+                        onclick="previsualizarDatosExcel('preventivos')">Previsualizar Preventivos</button>
+                    <button class="btn btn-secondary"
+                        onclick="previsualizarDatosExcel('planned-work')">Previsualizar Planned Work</button>
+                </div>
             </div>
-            
+            <div class="mb-3">
+                <button class="btn btn-success" onclick="exportarTodosDatos()">Exportar Todos los Datos</button>
+                <button class="btn btn-primary"
+                    onclick="document.getElementById('importar-archivo').click()">Importar Datos</button>
+                <input type="file" id="importar-archivo" style="display: none;" accept=".json"
+                    onchange="importarDatos(this.files)">
+                <button class="btn btn-danger" onclick="borrarDatosAlmacenados()">Borrar datos almacenados</button>
+            </div>
+
             <div class="preview-container">
-                <h3>Previsualización</h3>
+                <h3 class="mb-3">Previsualización</h3>
                 <pre id="preview-text"></pre>
-                <button class="action-button" id="copy-button" style="display: none;" onclick="copiarAlPortapapeles()">Copiar al portapapeles</button>
-                <button class="action-button" id="download-button" style="display: none;" onclick="descargarCSV()">Descargar CSV</button>
+                <button class="btn btn-primary" id="copy-button" style="display: none;"
+                    onclick="copiarAlPortapapeles()">Copiar al portapapeles</button>
+                <button class="btn btn-secondary" id="download-button" style="display: none;"
+                    onclick="descargarCSV()">Descargar CSV</button>
             </div>
         </div>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
     <script src="script.js"></script>
 </body>
+
 </html>
