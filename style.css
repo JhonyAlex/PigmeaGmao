@@ -462,3 +462,13 @@ th.sortable.desc::after {
 tr.hidden-row {
     display: none;
 }
+
+.delete-button {
+    background-color: #dc3545; /* Color rojo para el botón de eliminar */
+    color: white;
+    margin-left: 5px;
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+}

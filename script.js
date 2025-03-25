@@ -1412,6 +1412,46 @@ function editarPreventivo(id) {
         btnCancelar.onclick = cancelarEdicionPreventivo;
         btnAgregar.parentNode.insertBefore(btnCancelar, btnAgregar.nextSibling);
     }
+
+    if (!document.getElementById('eliminar-plan-preventivo')) {
+        const btnEliminar = document.createElement('button');
+        btnEliminar.id = 'eliminar-plan-preventivo';
+        btnEliminar.className = 'action-button delete-button';
+        btnEliminar.textContent = 'Eliminar Seleccionado';
+        btnEliminar.onclick = eliminarPlanesSeleccionados;
+        
+        // Obtener el botón de cancelar para insertar después de él
+        const btnCancelar = document.getElementById('cancelar-edicion-preventivo');
+        if (btnCancelar) {
+            btnCancelar.parentNode.insertBefore(btnEliminar, btnCancelar.nextSibling);
+        } else {
+            // Si por alguna razón no existe el botón cancelar, inserta después del botón actualizar
+            btnAgregar.parentNode.insertBefore(btnEliminar, btnAgregar.nextSibling);
+        }
+    }
+    
+    // Función para eliminar planes seleccionados
+    function eliminarPlanesSeleccionados() {
+        const planesSelect = document.getElementById('planes-preventivo');
+        const opcionesSeleccionadas = Array.from(planesSelect.selectedOptions);
+        
+        if (opcionesSeleccionadas.length === 0) {
+            alert('Por favor, selecciona al menos un plan para eliminar.');
+            return;
+        }
+        
+        // Confirmar eliminación
+        if (confirm('¿Estás seguro de que deseas eliminar los planes seleccionados?')) {
+            opcionesSeleccionadas.forEach(option => {
+                planesSelect.removeChild(option);
+            });
+            
+            // Verifica si quedaron opciones después de eliminar
+            if (planesSelect.options.length === 0) {
+                planesSelect.required = false;
+            }
+        }
+    }
 }
  // Añadir botón para cancelar edición
  if (!document.getElementById('cancelar-edicion-preventivo')) {
