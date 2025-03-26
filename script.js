@@ -1436,26 +1436,20 @@ function editarPreventivo(id) {
         const opcionesSeleccionadas = Array.from(planesSelect.selectedOptions);
         
         if (opcionesSeleccionadas.length === 0) {
-            alert('Por favor, selecciona al menos un plan para desvincular.');
+            alert('Por favor, selecciona al menos un plan para eliminar.');
             return;
         }
         
-        // Confirmar desvinculación (cambié el mensaje para reflejar la acción correcta)
-        if (confirm('¿Estás seguro de que deseas desvincular los planes seleccionados de este preventivo?')) {
+        // Confirmar eliminación
+        if (confirm('¿Estás seguro de que deseas eliminar los planes seleccionados?')) {
             opcionesSeleccionadas.forEach(option => {
                 planesSelect.removeChild(option);
-                
-                // Aquí podrías agregar código adicional si necesitas actualizar algún
-                // registro o estado que mantenga la relación entre planes y preventivos
             });
             
-            // Verifica si quedaron opciones después de desvincular
+            // Verifica si quedaron opciones después de eliminar
             if (planesSelect.options.length === 0) {
                 planesSelect.required = false;
             }
-            
-            // También podrías guardar estos cambios en tu base de datos o sistema 
-            // si es necesario mantener un registro de los planes desvinculados
         }
     }
 }
@@ -1584,24 +1578,7 @@ function cancelarEdicionPreventivo() {
       if (btnBorrar) btnBorrar.remove();
 
 
-      function cancelarEdicionPreventivo() {
-        // Código actual que ya tengas
-        
-        // Agregar estas líneas para deseleccionar los preventivos
-        const planesSelect = document.getElementById('planes-preventivo');
-        if (planesSelect) {
-            // Deseleccionar todas las opciones
-            for (let i = 0; i < planesSelect.options.length; i++) {
-                planesSelect.options[i].selected = false;
-            }
-        }
-        
-        // Limpiar cualquier estado de edición
-        preventivosSeleccionados = [];
-        
-        // Resetear el formulario o cualquier otro elemento
-        // (mantén el resto de tu código actual para resetear otros elementos)
-    }
+
 
 
 } // Elimina la llave extra que hay aquí
