@@ -1610,49 +1610,7 @@ function cancelarEdicionPreventivo() {
 
 let modoEdicionTarea = null;
 
-function editarTarea(taskKey) {
-    const tarea = datos.tareasTemp.find(t => t.taskKey === taskKey);
-    if (!tarea) return;
-    
-    // Establecer modo edición
-    modoEdicionTarea = taskKey;
-    
-    // Rellenar campos con datos actuales
-    document.getElementById('task-key').value = tarea.taskKey;
-    document.getElementById('task-descripcion').value = tarea.descripcion;
-    document.getElementById('task-duracion').value = tarea.duracion;
-    
-    // Cambiar el texto del botón
-    const btnAgregar = document.querySelector('.add-task-btn');
-    btnAgregar.textContent = 'Actualizar Tarea';
-    btnAgregar.onclick = function() {
-        actualizarTarea();
-    };
-    
-    // Añadir botón para cancelar edición
-    if (!document.getElementById('cancelar-edicion-tarea')) {
-        const btnCancelar = document.createElement('button');
-        btnCancelar.id = 'cancelar-edicion-tarea';
-        btnCancelar.className = 'action-button cancel-button';
-        btnCancelar.textContent = 'Cancelar';
-        btnCancelar.onclick = function() {
-            cancelarEdicionTarea();
-        };
-        btnAgregar.parentNode.insertBefore(btnCancelar, btnAgregar.nextSibling);
-    }
-
-    // Marcar visualmente la fila que se está editando
-    const filasTareas = document.querySelectorAll("#tareas-body tr");
-    filasTareas.forEach(fila => {
-        fila.classList.remove('editing-row');
-        if (fila.querySelector('td').textContent === taskKey) {
-            fila.classList.add('editing-row');
-        }
-    });
-    
-    // Usar la función de desplazamiento personalizada
-    scrollSmoothly(document.getElementById('task-key'));
-}
+function editarTarea(taskKey)
 
 function procesarCargaMasivaEquipamientos() {
     const texto = document.getElementById('carga-masiva-equipamientos').value.trim();
@@ -2630,4 +2588,5 @@ function extraerNumero(texto) {
     }
     return NaN; // No es un número
 }
+
 
