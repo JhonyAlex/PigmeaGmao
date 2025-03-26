@@ -1412,70 +1412,6 @@ function editarPreventivo(id) {
         btnCancelar.onclick = cancelarEdicionPreventivo;
         btnAgregar.parentNode.insertBefore(btnCancelar, btnAgregar.nextSibling);
     }
-
-    if (!document.getElementById('eliminar-plan-preventivo')) {
-        const btnEliminar = document.createElement('button');
-        btnEliminar.id = 'eliminar-plan-preventivo';
-        btnEliminar.className = 'action-button delete-button';
-        btnEliminar.textContent = 'Eliminar Seleccionado';
-        btnEliminar.onclick = eliminarPlanesSeleccionados;
-        
-        // Obtener el botón de cancelar para insertar después de él
-        const btnCancelar = document.getElementById('cancelar-edicion-preventivo');
-        if (btnCancelar) {
-            btnCancelar.parentNode.insertBefore(btnEliminar, btnCancelar.nextSibling);
-        } else {
-            // Si por alguna razón no existe el botón cancelar, inserta después del botón actualizar
-            btnAgregar.parentNode.insertBefore(btnEliminar, btnAgregar.nextSibling);
-        }
-    }
-    
-    // Función para eliminar planes seleccionados
-    function eliminarPlanesSeleccionados() {
-        const planesSelect = document.getElementById('planes-preventivo');
-        const opcionesSeleccionadas = Array.from(planesSelect.selectedOptions);
-        
-        if (opcionesSeleccionadas.length === 0) {
-            alert('Por favor, selecciona al menos un plan para eliminar.');
-            return;
-        }
-        
-        // Confirmar eliminación
-        if (confirm('¿Estás seguro de que deseas eliminar los planes seleccionados?')) {
-            opcionesSeleccionadas.forEach(option => {
-                planesSelect.removeChild(option);
-            });
-            
-            // Verifica si quedaron opciones después de eliminar
-            if (planesSelect.options.length === 0) {
-                planesSelect.required = false;
-            }
-        }
-    }
-}
- // Añadir botón para cancelar edición
- if (!document.getElementById('cancelar-edicion-preventivo')) {
-    const btnCancelar = document.createElement('button');
-    btnCancelar.id = 'cancelar-edicion-preventivo';
-    btnCancelar.className = 'action-button cancel-button';
-    btnCancelar.textContent = 'Cancelar Edición';
-    btnCancelar.onclick = cancelarEdicionPreventivo;
-    btnAgregar.parentNode.insertBefore(btnCancelar, btnAgregar.nextSibling);
-}
-
-// Añadir botón para borrar preventivo
-if (!document.getElementById('borrar-preventivo')) {
-    const btnBorrar = document.createElement('button');
-    btnBorrar.id = 'borrar-preventivo';
-    btnBorrar.className = 'action-button delete-button';
-    btnBorrar.textContent = 'Borrar Preventivo';
-    btnBorrar.onclick = function() {
-        if (confirm('¿Estás seguro de que quieres borrar este preventivo?')) {
-            eliminarPreventivo(preventivo.id);
-            cancelarEdicionPreventivo();
-        }
-    };
-    btnAgregar.parentNode.insertBefore(btnBorrar, btnAgregar.nextSibling);
 }
 
 function actualizarPreventivo() {
@@ -1568,26 +1504,59 @@ function cancelarEdicionPreventivo() {
         btnAgregar.textContent = 'Agregar Preventivo';
         btnAgregar.onclick = agregarPreventivo;
     }
-
-      // Eliminar botón cancelar
-      const btnCancelar = document.getElementById('cancelar-edicion-preventivo');
-      if (btnCancelar) btnCancelar.remove();
-  
-      // Eliminar botón borrar
-      const btnBorrar = document.getElementById('borrar-preventivo');
-      if (btnBorrar) btnBorrar.remove();
-
-
-
-
-
+    
+    // Eliminar botón cancelar
+    const btnCancelar = document.getElementById('cancelar-edicion-preventivo');
+    if (btnCancelar) btnCancelar.remove();
 } // Elimina la llave extra que hay aquí
 
 
 
 let modoEdicionTarea = null;
 
-function editarTarea(taskKey)
+function editarTarea(taskKey) {
+    const tarea = datos.tareasTemp.find(t => t.taskKey === taskKey);
+    if (!tarea) return;
+    
+    // Establecer modo edición
+    modoEdicionTarea = taskKey;
+    
+    // Rellenar campos con datos actuales
+    document.getElementById('task-key').value = tarea.taskKey;
+    document.getElementById('task-descripcion').value = tarea.descripcion;
+    document.getElementById('task-duracion').value = tarea.duracion;
+    
+    // Cambiar el texto del botón
+    const btnAgregar = document.querySelector('.add-task-btn');
+    btnAgregar.textContent = 'Actualizar Tarea';
+    btnAgregar.onclick = function() {
+        actualizarTarea();
+    };
+    
+    // Añadir botón para cancelar edición
+    if (!document.getElementById('cancelar-edicion-tarea')) {
+        const btnCancelar = document.createElement('button');
+        btnCancelar.id = 'cancelar-edicion-tarea';
+        btnCancelar.className = 'action-button cancel-button';
+        btnCancelar.textContent = 'Cancelar';
+        btnCancelar.onclick = function() {
+            cancelarEdicionTarea();
+        };
+        btnAgregar.parentNode.insertBefore(btnCancelar, btnAgregar.nextSibling);
+    }
+
+    // Marcar visualmente la fila que se está editando
+    const filasTareas = document.querySelectorAll("#tareas-body tr");
+    filasTareas.forEach(fila => {
+        fila.classList.remove('editing-row');
+        if (fila.querySelector('td').textContent === taskKey) {
+            fila.classList.add('editing-row');
+        }
+    });
+    
+    // Usar la función de desplazamiento personalizada
+    scrollSmoothly(document.getElementById('task-key'));
+}
 
 function procesarCargaMasivaEquipamientos() {
     const texto = document.getElementById('carga-masiva-equipamientos').value.trim();
@@ -2565,5 +2534,4 @@ function extraerNumero(texto) {
     }
     return NaN; // No es un número
 }
-
 
