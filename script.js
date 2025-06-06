@@ -573,7 +573,6 @@ function asignarPlanAEquipamiento() {
 
     if (!Array.isArray(plan.equipamientos)) plan.equipamientos = [];
     plan.equipamientos.push(equipamientoKey);
-
     actualizarFechaModificacionEquipamiento(equipamientoKey);
     actualizarTablaPlanes();
     actualizarSelectorPlanes();
@@ -638,7 +637,7 @@ function actualizarTablaTareas() {
         if (equipamientoKey) {
             const equipamiento = datos.equipamientos.find(e => e.key === equipamientoKey);
             if (equipamiento) {
-                taskTableTitle.textContent = `Tareas para ${equipamiento.key} - ${modoEdicionPlan ? 'Plan: ' + modoEdicionPlan : 'Nuevo Plan'}`;
+                taskTableTitle.textContent = `Tareas para ${equipamiento.key} - ${modoEdicionPlan ? 'Plan: ' + modoEdicionPlan.planKey : 'Nuevo Plan'}`;
             }
         } else {
             taskTableTitle.textContent = "Tareas cargadas";
@@ -707,7 +706,7 @@ function agregarPlanMantenimiento() {
         alert('Por favor, ingrese al menos una tarea.');
         return;
     }
-    
+
     // Verificar si ya existe un plan con la misma clave
     const existe = datos.planes.some(p => p.planKey === planKey);
     if (existe) {
@@ -1266,15 +1265,15 @@ function validarDatosImportados(datosImportados) {
 
 let modoEdicionPlan = null;
 
-function editarPlan(planKey) {
-    const plan = datos.planes.find(p => p.planKey === planKey);
+function editarPlan(planKey, equipamientoKey) {
+    const plan = datos.planes.find(p => p.planKey === planKey && p.equipamientoKey === equipamientoKey);
     if (!plan) return;
 
     plan.equipamientos.forEach(actualizarFechaModificacionEquipamiento);
 
     // Establecer modo edición
-    modoEdicionPlan = planKey;
 
+    modoEdicionPlan = planKey;
     // Rellenar campos con datos actuales
     document.getElementById('equipamiento-plan').value = plan.equipamientos[0] || '';
     document.getElementById('plan-key').value = plan.planKey;
@@ -1326,7 +1325,7 @@ function actualizarPlan() {
     }
     
     // Si la clave cambia, verificar que no exista otra igual
-    if (planKey !== modoEdicionPlan && datos.planes.some(p => p.planKey === planKey)) {
+    if (planKey !== modoEdicionPlan.planKey && datos.planes.some(p => p.planKey === planKey && p.equipamientoKey === equipamientoKey)) {
         alert('Ya existe un plan con esta clave.');
         return;
     }
@@ -1335,9 +1334,10 @@ function actualizarPlan() {
     const enUso = datos.preventivos.some(prev =>
         prev.plannedWork.some(pw => pw.maintenancePlan === modoEdicionPlan)
     );
+
     
     // Si está en uso y la clave va a cambiar, avisar y cancelar
-    if (enUso && planKey !== modoEdicionPlan) {
+    if (enUso && planKey !== modoEdicionPlan.planKey) {
         alert('No puede cambiar la clave del plan porque está siendo utilizado en preventivos.');
         return;
     }
@@ -1350,15 +1350,16 @@ function actualizarPlan() {
         plan.descripcion = truncateText(descripcionPlan, 100);
         plan.periodicidad = periodicidad;
         plan.tareas = [...datos.tareasTemp];
-
         // Si la clave cambió, actualizar referencias en preventivos
-        if (planKey !== modoEdicionPlan) {
+        if (planKey !== modoEdicionPlan.planKey) {
             datos.preventivos.forEach(prev => {
-                prev.plannedWork.forEach(pw => {
-                    if (pw.maintenancePlan === modoEdicionPlan) {
-                        pw.maintenancePlan = planKey;
-                    }
-                });
+                if (prev.asset === modoEdicionPlan.equipamientoKey) {
+                    prev.plannedWork.forEach(pw => {
+                        if (pw.maintenancePlan === modoEdicionPlan.planKey) {
+                            pw.maintenancePlan = planKey;
+                        }
+                    });
+                }
             });
         }
 
