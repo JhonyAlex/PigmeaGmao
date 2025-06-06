@@ -5,9 +5,13 @@ const datos = {
     preventivos: [],
     tareasTemp: [],
     currentExportType: null
-    
 };
+const ALLOW_PLAN_SHARING = true; // Permitir usar un mismo plan en varios preventivos
 // Función para realizar un desplazamiento suave personalizado
+// Obtener los planes disponibles según la configuración
+function obtenerPlanesDisponibles(equipamientoKey) {
+    return ALLOW_PLAN_SHARING ? datos.planes : datos.planes.filter(p => p.equipamientoKey === equipamientoKey);
+}
 function scrollSmoothly(targetElement, duration = 800) {
     // Obtener la posición inicial y final
     const startPosition = window.pageYOffset;
@@ -498,18 +502,17 @@ function buscarEquipamientos() {
 function actualizarSelectorPlanes() {
     const selector = document.getElementById('planes-preventivo');
     selector.innerHTML = '';
-    
+
     // Obtener el equipamiento seleccionado
     const equipamientoKey = document.getElementById('equipamiento-preventivo').value;
-    if (!equipamientoKey) return;
-    
-    // Filtrar planes por el equipamiento seleccionado
-    const planesFiltrados = datos.planes.filter(p => p.equipamientoKey === equipamientoKey);
-    
+
+    // Obtener planes disponibles según configuración
+    const planesFiltrados = obtenerPlanesDisponibles(equipamientoKey);
+
     planesFiltrados.forEach(plan => {
         // Verificar si el plan tiene un preventivo asociado a este equipamiento
-        const tienePreventivo = datos.preventivos.some(prev => 
-            prev.asset === equipamientoKey && 
+        const tienePreventivo = equipamientoKey && datos.preventivos.some(prev =>
+            prev.asset === equipamientoKey &&
             prev.plannedWork.some(pw => pw.maintenancePlan === plan.planKey)
         );
         
@@ -773,18 +776,17 @@ function actualizarTablaPlanes() {
 function actualizarSelectorPlanes() {
     const selector = document.getElementById('planes-preventivo');
     selector.innerHTML = '';
-    
+
     // Obtener el equipamiento seleccionado
     const equipamientoKey = document.getElementById('equipamiento-preventivo').value;
-    if (!equipamientoKey) return;
-    
-    // Filtrar planes por el equipamiento seleccionado
-    const planesFiltrados = datos.planes.filter(p => p.equipamientoKey === equipamientoKey);
-    
+
+    // Obtener planes disponibles según configuración
+    const planesFiltrados = obtenerPlanesDisponibles(equipamientoKey);
+
     planesFiltrados.forEach(plan => {
         // Verificar si el plan tiene un preventivo asociado a este equipamiento
-        const tienePreventivo = datos.preventivos.some(prev => 
-            prev.asset === equipamientoKey && 
+        const tienePreventivo = equipamientoKey && datos.preventivos.some(prev =>
+            prev.asset === equipamientoKey &&
             prev.plannedWork.some(pw => pw.maintenancePlan === plan.planKey)
         );
         
