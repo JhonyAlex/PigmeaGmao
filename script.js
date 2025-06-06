@@ -7,11 +7,17 @@ const datos = {
     currentExportType: null
 };
 const ALLOW_PLAN_SHARING = true; // Permitir usar un mismo plan en varios preventivos
-// Función para realizar un desplazamiento suave personalizado
-// Obtener los planes disponibles según la configuración
-function obtenerPlanesDisponibles(equipamientoKey) {
-    return ALLOW_PLAN_SHARING ? datos.planes : datos.planes.filter(p => p.equipamientoKey === equipamientoKey);
+// Devuelve verdadero si el plan está asociado al equipamiento indicado
+function planAsociadoA(plan, equipamientoKey) {
+    return Array.isArray(plan.equipamientos) && plan.equipamientos.includes(equipamientoKey);
 }
+
+// Obtener los planes disponibles según el equipamiento elegido
+function obtenerPlanesDisponibles(equipamientoKey) {
+    if (!equipamientoKey) return datos.planes;
+    return datos.planes.filter(p => planAsociadoA(p, equipamientoKey));
+}
+// Función para realizar un desplazamiento suave personalizado
 function scrollSmoothly(targetElement, duration = 800) {
     // Obtener la posición inicial y final
     const startPosition = window.pageYOffset;
@@ -91,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
     actualizarSelectorPlanExistente();
     
     // Inicializar tablas ordenables
-    hacerTablaOrdenable('tabla-planes', [0, 1]);
+    hacerTablaOrdenable('tabla-planes', [0, 2]);
     hacerTablaOrdenable('tabla-preventivos', [0, 1, 2]);
 });
 
@@ -248,7 +254,7 @@ function actualizarEquipamiento() {
     }
     
     // Verificar si el equipamiento está en uso en planes o preventivos
-    const enUsoPlan = datos.planes.some(plan => plan.equipamientoKey === modoEdicionEquipamiento);
+    const enUsoPlan = datos.planes.some(plan => planAsociadoA(plan, modoEdicionEquipamiento));
     const enUsoPreventivo = datos.preventivos.some(prev => prev.asset === modoEdicionEquipamiento);
     
     // Si está en uso y la clave va a cambiar, avisar y cancelar
@@ -271,9 +277,8 @@ function actualizarEquipamiento() {
         // Si la clave cambió, actualizar referencias en planes y preventivos
         if (newKey !== modoEdicionEquipamiento) {
             datos.planes.forEach(plan => {
-                if (plan.equipamientoKey === modoEdicionEquipamiento) {
-                    plan.equipamientoKey = newKey;
-                    plan.equipamientoPrefijo = prefijo;
+                if (planAsociadoA(plan, modoEdicionEquipamiento)) {
+                    plan.equipamientos = plan.equipamientos.map(k => k === modoEdicionEquipamiento ? newKey : k);
                 }
             });
             
@@ -363,7 +368,7 @@ function agregarEquipamiento() {
 
 function eliminarEquipamiento(key) {
     // Verificar si el equipamiento está en uso en planes o preventivos
-    const enUsoPlan = datos.planes.some(plan => plan.equipamientoKey === key);
+    const enUsoPlan = datos.planes.some(plan => planAsociadoA(plan, key));
     const enUsoPreventivo = datos.preventivos.some(prev => prev.asset === key);
     
     if (enUsoPlan || enUsoPreventivo) {
@@ -397,7 +402,7 @@ function actualizarTablaEquipamientos() {
         const tdEstado = document.createElement('td');
         
         // Verificar si tiene plan de mantenimiento
-        const tienePlan = datos.planes.some(plan => plan.equipamientoKey === equipamiento.key);
+        const tienePlan = datos.planes.some(plan => planAsociadoA(plan, equipamiento.key));
         
         // Verificar si tiene preventivo
         const tienePreventivo = datos.preventivos.some(prev => prev.asset === equipamiento.key);
@@ -464,7 +469,7 @@ function actualizarSelectorEquipamientos(selectorId) {
     
     datos.equipamientos.forEach(equipamiento => {
         // Verificar si el equipamiento tiene un plan de mantenimiento
-        const tienePlan = datos.planes.some(plan => plan.equipamientoKey === equipamiento.key);
+        const tienePlan = datos.planes.some(plan => planAsociadoA(plan, equipamiento.key));
         
         // Verificar si el equipamiento tiene un preventivo
         const tienePreventivo = datos.preventivos.some(prev => prev.asset === equipamiento.key);
@@ -554,28 +559,20 @@ function asignarPlanAEquipamiento() {
         return;
     }
 
-    if (datos.planes.some(p => p.planKey === planKey && p.equipamientoKey === equipamientoKey)) {
-        alert('Este equipamiento ya tiene asignado este plan.');
-        return;
-    }
-
-    const planOriginal = datos.planes.find(p => p.planKey === planKey);
+    const plan = datos.planes.find(p => p.planKey === planKey);
     const equipamiento = datos.equipamientos.find(e => e.key === equipamientoKey);
-    if (!planOriginal || !equipamiento) {
+    if (!plan || !equipamiento) {
         alert('Datos inválidos al asignar el plan.');
         return;
     }
 
-    const nuevoPlan = {
-        planKey: planOriginal.planKey,
-        equipamientoKey,
-        equipamientoPrefijo: equipamiento.prefijo,
-        descripcion: truncateText(`${equipamiento.descripcion} - ${planOriginal.periodicidad}`, 100),
-        periodicidad: planOriginal.periodicidad,
-        tareas: JSON.parse(JSON.stringify(planOriginal.tareas))
-    };
+    if (planAsociadoA(plan, equipamientoKey)) {
+        alert('Este equipamiento ya tiene asignado este plan.');
+        return;
+    }
 
-    datos.planes.push(nuevoPlan);
+    if (!Array.isArray(plan.equipamientos)) plan.equipamientos = [];
+    plan.equipamientos.push(equipamientoKey);
     actualizarFechaModificacionEquipamiento(equipamientoKey);
     actualizarTablaPlanes();
     actualizarSelectorPlanes();
@@ -709,11 +706,11 @@ function agregarPlanMantenimiento() {
         alert('Por favor, ingrese al menos una tarea.');
         return;
     }
-    
-    // Verificar si ya existe un plan con la misma clave para el equipamiento
-    const existe = datos.planes.some(p => p.planKey === planKey && p.equipamientoKey === equipamientoKey);
+
+    // Verificar si ya existe un plan con la misma clave
+    const existe = datos.planes.some(p => p.planKey === planKey);
     if (existe) {
-        alert('Este equipamiento ya tiene un plan con esta clave.');
+        alert('Ya existe un plan con esta clave.');
         return;
     }
     
@@ -731,15 +728,12 @@ function agregarPlanMantenimiento() {
     
     const plan = {
         planKey,
-        equipamientoKey,
-        equipamientoPrefijo: equipamiento.prefijo,
         descripcion: truncateText(descripcionPlan, 100),
         periodicidad,
-        tareas: [...datos.tareasTemp] // Copia las tareas temporales
+        tareas: [...datos.tareasTemp],
+        equipamientos: [equipamientoKey]
     };
 
-   
-    
     datos.planes.push(plan);
     actualizarTablaPlanes();
     actualizarSelectorPlanExistente();
@@ -760,22 +754,27 @@ function agregarPlanMantenimiento() {
 }
 
 function eliminarPlan(planKey, equipamientoKey) {
-    // Verificar si el plan está en uso en preventivos
+    const plan = datos.planes.find(p => p.planKey === planKey);
+    if (!plan) return;
+
+    // Verificar si el plan está en uso en preventivos para ese equipamiento
     const enUso = datos.preventivos.some(prev => {
         return prev.asset === equipamientoKey && prev.plannedWork.some(pw => pw.maintenancePlan === planKey);
     });
-    
+
     if (enUso) {
         alert('No se puede eliminar este plan porque está siendo utilizado en preventivos.');
         return;
     }
-    
-    // Guardar referencia al equipamiento antes de eliminar el plan
-    // Eliminar el plan específico
-    datos.planes = datos.planes.filter(p => !(p.planKey === planKey && p.equipamientoKey === equipamientoKey));
 
-    // Actualizar fecha de modificación del equipamiento relacionado
-    actualizarFechaModificacionEquipamiento(equipamientoKey);
+    if (equipamientoKey) {
+        plan.equipamientos = plan.equipamientos.filter(k => k !== equipamientoKey);
+        actualizarFechaModificacionEquipamiento(equipamientoKey);
+    }
+
+    if (plan.equipamientos.length === 0) {
+        datos.planes = datos.planes.filter(p => p.planKey !== planKey);
+    }
     
     actualizarTablaPlanes();
     actualizarSelectorPlanes();
@@ -789,44 +788,49 @@ function actualizarTablaPlanes() {
     tbody.innerHTML = '';
     
     datos.planes.forEach(plan => {
-        const tr = document.createElement('tr');
-        
-        const tdKey = document.createElement('td');
-        tdKey.textContent = plan.planKey;
-        
-        const tdDesc = document.createElement('td');
-        tdDesc.textContent = plan.descripcion;
-        
-        const tdTareas = document.createElement('td');
-        tdTareas.textContent = `${plan.tareas.length} tarea(s)`;
-        
-        const tdActions = document.createElement('td');
-        
-        // Botón de edición
-        const editBtn = document.createElement('button');
-        editBtn.className = 'edit-button';
-        editBtn.textContent = 'Editar';
-        editBtn.onclick = () => editarPlan(plan.planKey, plan.equipamientoKey);
-        tdActions.appendChild(editBtn);
-        
-        // Botón de eliminación
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'delete-button';
-        deleteBtn.textContent = 'Eliminar';
-        deleteBtn.onclick = () => eliminarPlan(plan.planKey, plan.equipamientoKey);
-        tdActions.appendChild(deleteBtn);
-        
-        tr.appendChild(tdKey);
-        tr.appendChild(tdDesc);
-        tr.appendChild(tdTareas);
-        tr.appendChild(tdActions);
-        
-        tbody.appendChild(tr);
+        plan.equipamientos.forEach(eqKey => {
+            const tr = document.createElement('tr');
+            tr.dataset.equipKey = eqKey;
+
+            const tdKey = document.createElement('td');
+            tdKey.textContent = plan.planKey;
+
+            const tdEquip = document.createElement('td');
+            tdEquip.textContent = eqKey;
+
+            const tdDesc = document.createElement('td');
+            tdDesc.textContent = plan.descripcion;
+
+            const tdTareas = document.createElement('td');
+            tdTareas.textContent = `${plan.tareas.length} tarea(s)`;
+
+            const tdActions = document.createElement('td');
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'edit-button';
+            editBtn.textContent = 'Editar';
+            editBtn.onclick = () => editarPlan(plan.planKey);
+            tdActions.appendChild(editBtn);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-button';
+            deleteBtn.textContent = 'Eliminar';
+            deleteBtn.onclick = () => eliminarPlan(plan.planKey, eqKey);
+            tdActions.appendChild(deleteBtn);
+
+            tr.appendChild(tdKey);
+            tr.appendChild(tdEquip);
+            tr.appendChild(tdDesc);
+            tr.appendChild(tdTareas);
+            tr.appendChild(tdActions);
+
+            tbody.appendChild(tr);
+        });
     });
     destacarPlanesRelacionados();
     
     // Hacer la tabla ordenable (solo después de llenar datos)
-    hacerTablaOrdenable('tabla-planes', [0, 1]); // Permitir ordenar por ID y descripción
+    hacerTablaOrdenable('tabla-planes', [0, 2]); // Permitir ordenar por ID y descripción
 }
 
 function actualizarSelectorPlanes() {
@@ -1265,13 +1269,13 @@ function editarPlan(planKey, equipamientoKey) {
     const plan = datos.planes.find(p => p.planKey === planKey && p.equipamientoKey === equipamientoKey);
     if (!plan) return;
 
-    actualizarFechaModificacionEquipamiento(plan.equipamientoKey);
-    
+    plan.equipamientos.forEach(actualizarFechaModificacionEquipamiento);
+
     // Establecer modo edición
-    modoEdicionPlan = { planKey, equipamientoKey };
-    
+
+    modoEdicionPlan = planKey;
     // Rellenar campos con datos actuales
-    document.getElementById('equipamiento-plan').value = plan.equipamientoKey;
+    document.getElementById('equipamiento-plan').value = plan.equipamientos[0] || '';
     document.getElementById('plan-key').value = plan.planKey;
     document.getElementById('periodicidad').value = plan.periodicidad;
     // Actualizar contexto
@@ -1306,12 +1310,11 @@ function editarPlan(planKey, equipamientoKey) {
 
 function actualizarPlan() {
     if (!modoEdicionPlan) return;
-    
-    const equipamientoKey = document.getElementById('equipamiento-plan').value;
+
     const planKey = document.getElementById('plan-key').value.trim();
     const periodicidad = document.getElementById('periodicidad').value;
-    
-    if (!equipamientoKey || !planKey || !periodicidad) {
+
+    if (!planKey || !periodicidad) {
         alert('Por favor, complete los campos requeridos del plan de mantenimiento.');
         return;
     }
@@ -1328,37 +1331,25 @@ function actualizarPlan() {
     }
     
     // Verificar si el plan está en uso en preventivos
-    const enUso = datos.preventivos.some(prev => {
-        return prev.asset === modoEdicionPlan.equipamientoKey && prev.plannedWork.some(pw => pw.maintenancePlan === modoEdicionPlan.planKey);
-    });
+    const enUso = datos.preventivos.some(prev =>
+        prev.plannedWork.some(pw => pw.maintenancePlan === modoEdicionPlan)
+    );
+
     
     // Si está en uso y la clave va a cambiar, avisar y cancelar
     if (enUso && planKey !== modoEdicionPlan.planKey) {
         alert('No puede cambiar la clave del plan porque está siendo utilizado en preventivos.');
         return;
     }
-    
-    // Encontrar el equipamiento seleccionado
-    const equipamiento = datos.equipamientos.find(e => e.key === equipamientoKey);
-    if (!equipamiento) {
-        alert('El equipamiento seleccionado no es válido.');
-        return;
-    }
-    
-    const descripcionPlan = `${equipamiento.descripcion} - ${periodicidad}`;
-    
-    // Actualizar el plan
-    const index = datos.planes.findIndex(p => p.planKey === modoEdicionPlan.planKey && p.equipamientoKey === modoEdicionPlan.equipamientoKey);
-    if (index !== -1) {
-        datos.planes[index] = {
-            planKey,
-            equipamientoKey,
-            equipamientoPrefijo: equipamiento.prefijo,
-            descripcion: truncateText(descripcionPlan, 100),
-            periodicidad,
-            tareas: [...datos.tareasTemp]
-        };
-        
+    const plan = datos.planes.find(p => p.planKey === modoEdicionPlan);
+    if (plan) {
+        const equipamiento = datos.equipamientos.find(e => e.key === plan.equipamientos[0]);
+        const descripcionPlan = equipamiento ? `${equipamiento.descripcion} - ${periodicidad}` : plan.descripcion;
+
+        plan.planKey = planKey;
+        plan.descripcion = truncateText(descripcionPlan, 100);
+        plan.periodicidad = periodicidad;
+        plan.tareas = [...datos.tareasTemp];
         // Si la clave cambió, actualizar referencias en preventivos
         if (planKey !== modoEdicionPlan.planKey) {
             datos.preventivos.forEach(prev => {
@@ -1371,7 +1362,9 @@ function actualizarPlan() {
                 }
             });
         }
-        
+
+        plan.equipamientos.forEach(actualizarFechaModificacionEquipamiento);
+
         actualizarTablaPlanes();
         actualizarSelectorPlanes();
         actualizarSelectorPlanExistente();
@@ -1945,7 +1938,7 @@ function actualizarContextoActual() {
             equipamientoDisplay.textContent = `${equipamiento.key} - ${equipamiento.descripcion}`;
             
             // Buscar si el equipamiento ya tiene un plan asociado
-            const planesAsociados = datos.planes.filter(p => p.equipamientoKey === equipamientoKey);
+            const planesAsociados = datos.planes.filter(p => planAsociadoA(p, equipamientoKey));
             
             if (planesAsociados.length > 0) {
                 // Si tiene planes, mostrarlos en verde
@@ -2016,9 +2009,11 @@ function cargarPreventivosAutomaticos() {
 
     // Llenar el mapa con los planes disponibles para cada equipamiento
     datos.planes.forEach(plan => {
-        if (planesDisponiblesPorEquipo[plan.equipamientoKey]) {
-            planesDisponiblesPorEquipo[plan.equipamientoKey].push(plan);
-        }
+        plan.equipamientos.forEach(eq => {
+            if (planesDisponiblesPorEquipo[eq]) {
+                planesDisponiblesPorEquipo[eq].push(plan);
+            }
+        });
     });
 
     // Filtrar equipamientos que tienen al menos un plan configurado
@@ -2462,15 +2457,12 @@ function destacarPlanesRelacionados() {
     if (equipamientoKey) {
         // Resaltar y mostrar solo las filas de los planes relacionados con este equipamiento
         filas.forEach(fila => {
-            // La primera celda (índice 0) contiene el planKey
-            const planKey = fila.cells[0].textContent;
-            const plan = datos.planes.find(p => p.planKey === planKey);
-            
-            if (plan && plan.equipamientoKey === equipamientoKey) {
+            const filaEquip = fila.dataset.equipKey;
+            if (filaEquip === equipamientoKey) {
                 fila.classList.add('fila-relacionada');
-                fila.style.display = ''; // Asegurarse que sea visible
+                fila.style.display = '';
             } else {
-                fila.style.display = 'none'; // Ocultar filas no relacionadas
+                fila.style.display = 'none';
             }
         });
     }
