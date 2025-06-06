@@ -7,6 +7,39 @@ const datos = {
     currentExportType: null
 };
 const ALLOW_PLAN_SHARING = true; // Permitir usar un mismo plan en varios preventivos
+
+
+/**
+ * Normaliza los planes de mantenimiento para soportar versiones anteriores.
+ * - Convierte la propiedad "equipamientoKey" a "equipamientos".
+ * - Combina planes duplicados que tengan la misma clave.
+ * @param {Array} planes Lista de planes almacenados.
+ * @returns {Array} Lista normalizada de planes.
+ */
+function normalizarPlanes(planes = []) {
+    const mapa = new Map();
+    planes.forEach(p => {
+        const plan = { ...p };
+        if (!Array.isArray(plan.equipamientos)) {
+            const eq = plan.equipamientoKey;
+            plan.equipamientos = eq ? [eq] : [];
+        }
+        delete plan.equipamientoKey;
+        delete plan.equipamientoPrefijo;
+
+        const existente = mapa.get(plan.planKey);
+        if (existente) {
+            plan.equipamientos.forEach(eq => {
+                if (!existente.equipamientos.includes(eq)) {
+                    existente.equipamientos.push(eq);
+                }
+            });
+        } else {
+            mapa.set(plan.planKey, plan);
+        }
+    });
+    return Array.from(mapa.values());
+}
 // Devuelve verdadero si el plan está asociado al equipamiento indicado
 function planAsociadoA(plan, equipamientoKey) {
     return Array.isArray(plan.equipamientos) && plan.equipamientos.includes(equipamientoKey);
@@ -78,7 +111,7 @@ function cargarDatos() {
             }
         });
         
-        datos.planes = datosParseados.planes || [];
+        datos.planes = normalizarPlanes(datosParseados.planes);
         datos.preventivos = datosParseados.preventivos || [];
         datos.currentExportType = datosParseados.currentExportType;
         
@@ -1199,7 +1232,7 @@ function importarDatos(files) {
             if (confirm('¿Está seguro de que desea importar estos datos? Se reemplazarán los datos actuales.')) {
                 // Reemplazar los datos actuales
                 datos.equipamientos = datosImportados.contenido.equipamientos;
-                datos.planes = datosImportados.contenido.planes;
+                datos.planes = normalizarPlanes(datosImportados.contenido.planes);
                 datos.preventivos = datosImportados.contenido.preventivos;
                 
                 // Guardar en localStorage
@@ -1274,6 +1307,7 @@ function editarPlan(planKey, equipamientoKey) {
     // Establecer modo edición
 
     modoEdicionPlan = planKey;
+
     // Rellenar campos con datos actuales
     document.getElementById('equipamiento-plan').value = plan.equipamientos[0] || '';
     document.getElementById('plan-key').value = plan.planKey;
@@ -1350,6 +1384,7 @@ function actualizarPlan() {
         plan.descripcion = truncateText(descripcionPlan, 100);
         plan.periodicidad = periodicidad;
         plan.tareas = [...datos.tareasTemp];
+
         // Si la clave cambió, actualizar referencias en preventivos
         if (planKey !== modoEdicionPlan.planKey) {
             datos.preventivos.forEach(prev => {
