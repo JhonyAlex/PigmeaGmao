@@ -94,8 +94,16 @@
                     <option value="Mensual">Mensual</option>
                     <option value="Trimestral">Trimestral</option>
                     <option value="Semestral">Semestral</option>
-                    <option value="Anual">Anual</option>
+                <option value="Anual">Anual</option>
                 </select>
+            </div>
+
+            <div class="form-group">
+                <label for="plan-existente">Asignar Plan Existente:</label>
+                <select id="plan-existente">
+                    <option value="">-- Seleccionar Plan --</option>
+                </select>
+                <button type="button" class="action-button" onclick="asignarPlanAEquipamiento()">Asignar al Equipamiento</button>
             </div>
 
             <!-- Añadir después del selector de periodicidad -->
