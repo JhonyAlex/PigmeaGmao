@@ -9,7 +9,7 @@ PigmeaGmao es una herramienta web especializada para crear y gestionar equipamie
 ## 🌟 Características principales
 
 - **Gestión de Equipamientos**: Crear, editar y eliminar equipos con códigos personalizados.
-- **Planes de Mantenimiento**: Configurar planes con tareas específicas y asignarlos a varios equipamientos.
+- **Planes de Mantenimiento**: Configurar planes con tareas específicas, asignarlos a varios equipamientos y vincular varios planes a un equipo de una sola vez.
 - **Preventivos**: Generar preventivos con diferentes frecuencias (diaria, semanal, mensual, etc.).
 - **Exportación de Datos**: Generar archivos CSV listos para importar en Value Keep GMAO.
 - **Guardado Local**: Almacenamiento local de datos para recuperación entre sesiones.

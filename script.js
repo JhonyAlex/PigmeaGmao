@@ -8,7 +8,6 @@ const datos = {
 };
 const ALLOW_PLAN_SHARING = true; // Permitir usar un mismo plan en varios preventivos
 
-
 /**
  * Normaliza los planes de mantenimiento para soportar versiones anteriores.
  * - Convierte la propiedad "equipamientoKey" a "equipamientos".
@@ -45,6 +44,27 @@ function planAsociadoA(plan, equipamientoKey) {
     return Array.isArray(plan.equipamientos) && plan.equipamientos.includes(equipamientoKey);
 }
 
+/**
+ * Vincula un plan existente con un equipamiento, evitando duplicados.
+ * @param {string} planKey Identificador del plan.
+ * @param {string} equipamientoKey Identificador del equipamiento.
+ * @returns {boolean} True si se realizó la vinculación.
+ */
+function vincularPlanConEquipo(planKey, equipamientoKey) {
+    const plan = datos.planes.find(p => p.planKey === planKey);
+    const equipamiento = datos.equipamientos.find(e => e.key === equipamientoKey);
+    if (!plan || !equipamiento) return false;
+
+    if (!Array.isArray(plan.equipamientos)) {
+        plan.equipamientos = [];
+    }
+
+    if (planAsociadoA(plan, equipamientoKey)) return false;
+
+    plan.equipamientos.push(equipamientoKey);
+    actualizarFechaModificacionEquipamiento(equipamientoKey);
+    return true;
+}
 // Obtener los planes disponibles según el equipamiento elegido
 function obtenerPlanesDisponibles(equipamientoKey) {
     if (!equipamientoKey) return datos.planes;
@@ -586,33 +606,26 @@ function actualizarSelectorPlanExistente() {
 
 function asignarPlanAEquipamiento() {
     const equipamientoKey = document.getElementById('equipamiento-plan').value;
-    const planKey = document.getElementById('plan-existente').value;
-    if (!equipamientoKey || !planKey) {
-        alert('Seleccione un equipamiento y un plan existente.');
+    const selector = document.getElementById('plan-existente');
+    const seleccionados = Array.from(selector.selectedOptions)
+        .map(opt => opt.value)
+        .filter(v => v);
+
+    if (!equipamientoKey || seleccionados.length === 0) {
+        alert('Seleccione un equipamiento y al menos un plan existente.');
         return;
     }
 
-    const plan = datos.planes.find(p => p.planKey === planKey);
-    const equipamiento = datos.equipamientos.find(e => e.key === equipamientoKey);
-    if (!plan || !equipamiento) {
-        alert('Datos inválidos al asignar el plan.');
-        return;
-    }
-
-    if (planAsociadoA(plan, equipamientoKey)) {
-        alert('Este equipamiento ya tiene asignado este plan.');
-        return;
-    }
-
-    if (!Array.isArray(plan.equipamientos)) plan.equipamientos = [];
-    plan.equipamientos.push(equipamientoKey);
-    actualizarFechaModificacionEquipamiento(equipamientoKey);
+    seleccionados.forEach(planKey => {
+        vincularPlanConEquipo(planKey, equipamientoKey);
+    });
     actualizarTablaPlanes();
     actualizarSelectorPlanes();
     actualizarSelectorPlanExistente();
     actualizarContextoActual();
     guardarDatos();
-    alert('Plan asignado correctamente.');
+
+    alert('Planes asignados correctamente.');
 }
 
 
@@ -1368,8 +1381,6 @@ function actualizarPlan() {
     const enUso = datos.preventivos.some(prev =>
         prev.plannedWork.some(pw => pw.maintenancePlan === modoEdicionPlan)
     );
-
-    
     // Si está en uso y la clave va a cambiar, avisar y cancelar
     if (enUso && planKey !== modoEdicionPlan.planKey) {
         alert('No puede cambiar la clave del plan porque está siendo utilizado en preventivos.');
