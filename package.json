@@ -1,0 +1,13 @@
+{
+  "name": "pigmeagmao",
+  "version": "1.0.0",
+  "description": "![PigmeaGmao Logo](https://raw.githubusercontent.com/JhonyAlex/PigmeaGmao/main/assets/logo.png)",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"No tests configured\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
