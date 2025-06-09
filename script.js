@@ -8,6 +8,28 @@ const datos = {
 };
 const ALLOW_PLAN_SHARING = true; // Permitir usar un mismo plan en varios preventivos
 
+// Configuración centralizada de periodicidades y sus equivalentes de frecuencia
+// para los planned work. Esto facilita mantener y ampliar las opciones.
+const PERIODICITY_CONFIG = {
+    'Diario': { frequency: 'Daily', occursEvery: 1 },
+    'Semanal': { frequency: 'Weekly', occursEvery: 1 },
+    'Quincenal': { frequency: 'Weekly', occursEvery: 2 },
+    'Bimestral': { frequency: 'Monthly', occursEvery: 2 },
+    'Mensual': { frequency: 'Monthly', occursEvery: 1 },
+    'Trimestral': { frequency: 'Monthly', occursEvery: 3 },
+    'Semestral': { frequency: 'Monthly', occursEvery: 6 },
+    'Anual': { frequency: 'Monthly', occursEvery: 12 }
+};
+
+/**
+ * Devuelve la configuración de frecuencia para una periodicidad dada.
+ * @param {string} periodicidad Texto de periodicidad (Ej: "Mensual").
+ * @returns {{frequency: string, occursEvery: number}} Configuración asociada.
+ */
+function getFrequencyConfig(periodicidad) {
+    return PERIODICITY_CONFIG[periodicidad] || { frequency: 'Monthly', occursEvery: 1 };
+}
+
 /**
  * Normaliza los planes de mantenimiento para soportar versiones anteriores.
  * - Convierte la propiedad "equipamientoKey" a "equipamientos".
@@ -944,10 +966,11 @@ function actualizarFrecuencias() {
             optionMonthly.textContent = 'Monthly';
             selectFrequency.appendChild(optionMonthly);
             
-            // Seleccionar valor basado en la periodicidad del plan
-            if (plan.periodicidad === 'Diario') {
+            // Seleccionar valor y occursEvery basado en la periodicidad
+            const { frequency, occursEvery } = getFrequencyConfig(plan.periodicidad);
+            if (frequency === 'Daily') {
                 optionDaily.selected = true;
-            } else if (plan.periodicidad === 'Semanal' || plan.periodicidad === 'Quincenal') {
+            } else if (frequency === 'Weekly') {
                 optionWeekly.selected = true;
             } else {
                 optionMonthly.selected = true;
@@ -961,22 +984,8 @@ function actualizarFrecuencias() {
             inputOccurs.min = '1';
             inputOccurs.required = true;
             
-            // Establecer valor predeterminado basado en la periodicidad
-            if (plan.periodicidad === 'Diario') {
-                inputOccurs.value = '1';
-            } else if (plan.periodicidad === 'Semanal') {
-                inputOccurs.value = '1';
-            } else if (plan.periodicidad === 'Quincenal') {
-                inputOccurs.value = '2';
-            } else if (plan.periodicidad === 'Mensual') {
-                inputOccurs.value = '1';
-            } else if (plan.periodicidad === 'Trimestral') {
-                inputOccurs.value = '3';
-            } else if (plan.periodicidad === 'Semestral') {
-                inputOccurs.value = '6';
-            } else if (plan.periodicidad === 'Anual') {
-                inputOccurs.value = '12';
-            }
+            // Valor predeterminado para occursEvery
+            inputOccurs.value = occursEvery;
             
             div.appendChild(inputOccurs);
             
@@ -2206,43 +2215,8 @@ actualizarTablaEquipamientos();
 
 // Función auxiliar para crear un planned work basado en un plan
 function crearPlannedWork(preventiveMaintenanceId, plan) {
-    // Determinar la frecuencia y ocurrencia basado en la periodicidad del plan
-    let frequency, occursEvery;
-    
-    switch(plan.periodicidad) {
-        case 'Diario':
-            frequency = 'Daily';
-            occursEvery = 1;
-            break;
-        case 'Semanal':
-            frequency = 'Weekly';
-            occursEvery = 1;
-            break;
-        case 'Quincenal':
-            frequency = 'Weekly';
-            occursEvery = 2;
-            break;
-        case 'Mensual':
-            frequency = 'Monthly';
-            occursEvery = 1;
-            break;
-        case 'Trimestral':
-            frequency = 'Monthly';
-            occursEvery = 3;
-            break;
-        case 'Semestral':
-            frequency = 'Monthly';
-            occursEvery = 6;
-            break;
-        case 'Anual':
-            frequency = 'Monthly';
-            occursEvery = 12;
-            break;
-        default:
-            frequency = 'Monthly';
-            occursEvery = 1;
-    }
-    
+    const { frequency, occursEvery } = getFrequencyConfig(plan.periodicidad);
+
     return {
         preventiveMaintenanceId,
         maintenancePlan: plan.planKey,
