@@ -2264,11 +2264,11 @@ function previsualizarDatos(tipo) {
         case 'tareas':
             hasData = datos.planes.some(p => p.tareas && p.tareas.length > 0);
             if (hasData) {
-                csv = 'MaintenancePlanKey,TaskKey,Descripcion,Duracion\n';
+                csv = 'MaintenancePlanKey,PlanDescripcion,TaskKey,Descripcion,Duracion\n';
                 datos.planes.forEach(p => {
                     if (p.tareas) {
                         p.tareas.forEach(t => {
-                            csv += `${escapeCSV(p.planKey)},${escapeCSV(t.taskKey)},${escapeCSV(t.descripcion)},${escapeCSV(t.duracion)}\n`;
+                            csv += `${escapeCSV(p.planKey)},${escapeCSV(p.descripcion)},${escapeCSV(t.taskKey)},${escapeCSV(t.descripcion)},${escapeCSV(t.duracion)}\n`;
                         });
                     }
                 });
@@ -2368,14 +2368,14 @@ function previsualizarDatosExcel(tipo) {
             });
             if (!hasData) break;
 
-            headerRow.innerHTML = '<th>MaintenancePlanKey</th><th>TaskKey</th><th>Descripcion</th><th>Duracion</th>';
+            headerRow.innerHTML = '<th>MaintenancePlanKey</th><th>PlanDescripcion</th><th>TaskKey</th><th>Descripcion</th><th>Duracion</th>';
             table.appendChild(headerRow);
-            
+
             datos.planes.forEach(p => {
                 if (p.tareas) {
                     p.tareas.forEach(t => {
                         let row = document.createElement('tr');
-                        row.innerHTML = `<td>${p.planKey}</td><td>${t.taskKey}</td><td>${t.descripcion}</td><td>${t.duracion}</td>`;
+                        row.innerHTML = `<td>${p.planKey}</td><td>${p.descripcion}</td><td>${t.taskKey}</td><td>${t.descripcion}</td><td>${t.duracion}</td>`;
                         table.appendChild(row);
                     });
                 }
