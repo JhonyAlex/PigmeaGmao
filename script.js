@@ -27,7 +27,12 @@ const PERIODICITY_CONFIG = {
  * @returns {{frequency: string, occursEvery: number}} Configuración asociada.
  */
 function getFrequencyConfig(periodicidad) {
-    return PERIODICITY_CONFIG[periodicidad] || { frequency: 'Monthly', occursEvery: 1 };
+    const config = PERIODICITY_CONFIG[periodicidad];
+    if (!config) {
+        console.warn(`[getFrequencyConfig] Periodicidad '${periodicidad}' no encontrada en PERIODICITY_CONFIG. Se utilizará 'Mensual, 1'.`);
+        return { frequency: 'Monthly', occursEvery: 1 };
+    }
+    return config;
 }
 
 /**
